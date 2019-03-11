@@ -21,14 +21,14 @@ int BCDDecode(const u8 *src, char *des, size_t l)
 				*(des + (i*2)) = valh + 0x30;
 			else
 				{
-					printf("the byte is not in BCD coding range at index %u.\n", i);
+					printf("the byte is not in BCD coding range at index %lu.\n", i);
 					return FAIL;
 				}
 			if(vall < 0x0A)
 				*(des + (i*2) + 1) = vall + 0x30;
 			else
 				{
-					printf("the byte is not in BCD coding range at index %u.\n", i);
+					printf("the byte is not in BCD coding range at index %lu.\n", i);
 					return FAIL;
 				}
 				
@@ -55,14 +55,14 @@ int BCDEncode(const char *src, u8 *des, size_t l)
 				valh = ((*(src + (2*i)) - 0x30) << 4);
 			else
 				{
-					printf("the char %c at index %u is not in BCD coding range.\n", *(src + (2*i)), (2*i));
+					printf("the char %c at index %lu is not in BCD coding range.\n", *(src + (2*i)), (2*i));
 					return FAIL;
 				}				
 			if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
 					vall = (*(src + (2*i) +1) - 0x30);
 			else
 				{
-					printf("the char %c at index %u is not in BCD coding range.\n", *(src + (2*i) +1), ((2*i) +1));
+					printf("the char %c at index %lu is not in BCD coding range.\n", *(src + (2*i) +1), ((2*i) +1));
 					return FAIL;
 				}
 			*(des + i) = (valh + vall);				
@@ -112,7 +112,7 @@ unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align)
 						}
 			else
 				{
-					printf("the byte is not in BCD coding range at index %u.\n", i);
+					printf("the byte is not in BCD coding range at index %lu.\n", i);
 					return FAIL;
 				}
 			if(vall < 0x0A)
@@ -138,7 +138,7 @@ unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align)
 						}
 			else
 				{
-					printf("the byte is not in BCD coding range at index %u.\n", i);
+					printf("the byte is not in BCD coding range at index %lu.\n", i);
 					return FAIL;
 				}
 				
@@ -192,7 +192,7 @@ The char *src to memory *des, *src is the hex view string of some piece of memor
 int HexviewcharToHex(const char *src, u8 *des, size_t l)
 {
 	size_t src_l = strlen(src);
-	if(src_l != ((2*l)+1))
+	if(src_l < (2*l))
 		{
 			printf("illegal hex view string size or memory size!\n");
 			return FAIL;
@@ -217,7 +217,7 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 						case 'e': valh = 0x0E << 4;break;
 						case 'F': ;
 						case 'f': valh = 0x0F << 4;break;
-						default: printf("illegal hex char %c at index %u\n", *(src + (2*i)), (2*i));return FAIL;
+						default: printf("illegal hex char %c at index %lu\n", *(src + (2*i)), (2*i));return FAIL;
 					}
 				if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
 					vall = (*(src + (2*i) +1) - 0x30);
@@ -236,10 +236,22 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 						case 'e': vall = 0x0E;break;
 						case 'F': ;
 						case 'f': vall = 0x0F;break;
-						default: printf("illegal hex char %c at index %u\n", *(src + (2*i) + 1), (2*i) + 1);return FAIL;
+						default: printf("illegal hex char %c at index %lu\n", *(src + (2*i) + 1), (2*i) + 1);return FAIL;
 					}
 				*(des + i) = (valh + vall);
 		}
 }
 
+/*-------------------
+Calculate the value of *src of memory, l less then 5
+-------------------*/
+unsigned int CalSmalMemoryPieceVal(const u8 *src, size_t l)
+{
+	unsigned int rlt = 0;
+	for(size_t i = 0; i < l; i++)
+	{
+		rlt += ((*(src + i)) << (l -i -1));
+	}
+	return rlt;
+}
 

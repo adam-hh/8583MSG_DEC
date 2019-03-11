@@ -15,4 +15,5 @@ extern int BCDEncode(const char *src, u8 *des, size_t l);
 extern unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align);
 extern int Hexview(const u8 *src, char *des, size_t l);
 extern int HexviewcharToHex(const char *src, u8 *des, size_t l);
+extern unsigned int CalSmalMemoryPieceVal(const u8 *, size_t l);
 
