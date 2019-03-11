@@ -51,22 +51,22 @@ int BCDEncode(const char *src, u8 *des, size_t l)
 	u8 valh, vall;
 	for(size_t i =0; i < l; i++)
 		{
-			if(((*(src + (2*i))) > 0x29) && ((*(src + (2*i))) < 0x40) 
-				valh = (*(src + (2*i)) - 0x30) << 4;
+			if(((*(src + (2*i))) > 0x29) && ((*(src + (2*i))) < 0x40)) 
+				valh = ((*(src + (2*i)) - 0x30) << 4);
 			else
 				{
 					printf("the char %c at index %u is not in BCD coding range.\n", *(src + (2*i)), (2*i));
 					return FAIL;
 				}				
-			if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40) 
+			if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
 					vall = (*(src + (2*i) +1) - 0x30);
 			else
 				{
 					printf("the char %c at index %u is not in BCD coding range.\n", *(src + (2*i) +1), ((2*i) +1));
 					return FAIL;
-				}				
+				}
+			*(des + i) = (valh + vall);				
 		}
-	*(des + i) = valh + vall;
 	return OK;
 }
 
@@ -200,8 +200,8 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 	u8 valh, vall;
 	for(size_t i =0; i < l; i++)
 		{
-			if(((*(src + (2*i))) > 0x29) && ((*(src + (2*i))) < 0x40) 
-				valh = (*(src + (2*i)) - 0x30) << 4;
+			if(((*(src + (2*i))) > 0x29) && ((*(src + (2*i))) < 0x40)) 
+				valh = ((*(src + (2*i)) - 0x30) << 4);
 			else
 				switch(*(src + (2*i)))
 					{
@@ -219,7 +219,7 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 						case 'f': valh = 0x0F << 4;break;
 						default: printf("illegal hex char %c at index %u\n", *(src + (2*i)), (2*i));return FAIL;
 					}
-				if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40) 
+				if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
 					vall = (*(src + (2*i) +1) - 0x30);
 				else
 					switch(*(src + (2*i) +1))
@@ -238,9 +238,8 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 						case 'f': vall = 0x0F;break;
 						default: printf("illegal hex char %c at index %u\n", *(src + (2*i) + 1), (2*i) + 1);return FAIL;
 					}
-				
+				*(des + i) = (valh + vall);
 		}
-	*(des + i) = valh + vall;
 }
 
 
