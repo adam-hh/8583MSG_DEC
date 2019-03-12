@@ -75,7 +75,7 @@ Calculate the number in memory *src, l is length of *src, memory piece size.
 align is the numbers align, can be RIGHT or LEFT.
 actually left align has a logical error by normal explain.
 -------------------*/
-unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align)
+unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align)
 {
 	u8 valh, vall;
 	unsigned int rlt = 0;
@@ -149,7 +149,7 @@ unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align)
 /*----------------------
 
 ----------------------*/
-unsigned int BCDCalInMsgLenField(u8 *src, size_t l, HowNumberAlign align)
+unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align)
 {
 	unsigned int rlt = BCDCal(src, l, align);
 	if((rlt % 2) == 0)
@@ -326,7 +326,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	curpos += ((ptrdecoder->FieldMsghead_l) = 6);
 	
 	ptrdecoder->Field0 = curpos; //This is a length var field, but length field always 0x04, just like a fixed length field.
-	ptrdecoder->Field0_l = (1 + (BCDCalInMsgLenField((src + curpos), 1, RIGHT)/2));
+	ptrdecoder->Field0_l = (1 + ((BCDCalInMsgLenField((src + curpos), 1, RIGHT) / 2)));
 	curpos += (ptrdecoder->Field0_l);
 
 	ptrdecoder->Field1 = curpos; //  Field1 is actuall the bitmap
@@ -337,7 +337,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	curpos += (ptrdecoder->Field1_l);
 	size_t BitMapLen = ptrdecoder->Field1_l;
 	u8 *BitMap = (u8*)malloc(BitMapLen);
-	memcpy(BitMap, ptrdecoder->Field1, BitMapLen);
+	memcpy(BitMap, src + curpos, BitMapLen);
 	
 #define TEST(x) BitMaptest(x, BitMap, BitMapLen)
 	int rlt = FAIL;           // Field2
@@ -466,7 +466,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 			ptrdecoder->Field13 = curpos;
 			curpos += (ptrdecoder->Field13_l = 2);
 		}
-	else if(FAIL = rlt)
+	else if(FAIL == rlt)
 		{
 			printf("Field13 not exist.\n");
 		}
@@ -613,7 +613,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 			return FAIL;
 		}
 
-	rlt = TEST(36); Field36
+	rlt = TEST(36); //Field36
 	if(OK == rlt)
 		{
 			ptrdecoder->Field36 = curpos;
@@ -903,7 +903,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 		}
 
 	rlt = TEST(56); //Field 56
-	if(OK == rlt);
+	if(OK == rlt)
 		{
 			ptrdecoder->Field56 = curpos;
 			ptrdecoder->Field56_l = (2 + BCDCal(src + curpos, 2, RIGHT));
@@ -981,7 +981,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 		{
 			ptrdecoder->Field61 = curpos;
 			ptrdecoder->Field61_l = (2 + ((BCDCalInMsgLenField(src + curpos, 2, RIGHT)) / 2));
-			curpos += (ptrdecoder->Field61_1);
+			curpos += (ptrdecoder->Field61_l);
 		}
 	else if(FAIL == rlt)
 		{
@@ -1010,12 +1010,12 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 			return FAIL;
 		}
 
-	rlt = TEST(63) //Field 63
+	rlt = TEST(63); //Field 63
 	if(OK == rlt)
 		{
 			ptrdecoder->Field63 = curpos;
 			ptrdecoder->Field63_l = (2 + BCDCal(src +curpos, 2, RIGHT));
-			curpos += (ptrdecoder->Field63_1);
+			curpos += (ptrdecoder->Field63_l);
 		}
 	else if(FAIL == rlt)
 		{
@@ -1033,7 +1033,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 			ptrdecoder->Field64 = curpos;
 			curpos += (ptrdecoder->Field64_l = 8);
 		}
-	else if(FAIL = rlt)
+	else if(FAIL == rlt)
 		{
 			printf("Field 64 not exist.\n");
 		}
@@ -1046,7 +1046,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	
 #undef TEST
 
-	free(BitM);
+	free(BitMap);
 }
 
 

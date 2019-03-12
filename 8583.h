@@ -12,10 +12,10 @@ typedef unsigned int u32;
 /*-----------------------
 Decoder to store the field's location
 -----------------------*/
-#define F(x) u32 Field##x, Field##x_l
+#define F(x) u32 Field##x, Field##x##_l
 typedef struct
 {
-	u8 *Msgmem = NULL; //pst of message memory head
+	const u8 *Msgmem; //pst of message memory head
 	size_t Msgmem_l;  //message  memory piece length
 	u32 FieldLen, FieldLen_l; // FieldLen is the offset of field "FieldLen" head, Field_l is the length of the field. 
 	u32 FieldTPDU, FieldTPDU_l;
@@ -31,12 +31,12 @@ typedef struct
 	F(36);F(37);F(38);F(39);F(40);F(41);F(42);F(43);F(44);F(45);F(46);F(47);F(48);F(49);F(50);
 	F(51);F(52);F(53);F(54);F(55);F(56);F(57);F(58);F(59);F(60);F(61);F(62);F(63);F(64);	
 }*PtrDecoder, Decoder;
-#undef F(x)
+#undef F
 
 extern int BCDDecode(const u8 *src, char *des, size_t l);
 extern int BCDEncode(const char *src, u8 *des, size_t l);
-extern unsigned int BCDCal(u8 *src, size_t l, HowNumberAlign align);
-extern unsigned int BCDCalInMsgLenField(u8 *src, size_t l, HowNumberAlign align);
+extern unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align);
+extern unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align);
 extern int Hexview(const u8 *src, char *des, size_t l);
 extern int HexviewcharToHex(const char *src, u8 *des, size_t l);
 extern unsigned int CalSmalMemoryPieceVal(const u8 *, size_t l);
