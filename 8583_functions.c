@@ -665,7 +665,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field36 = curpos;
-			ptrdecoder->Field36_l = (1 + (BCDCalInMsgLenField(src + curpos, 2, RIGHT))/2);
+			ptrdecoder->Field36_l = (2 + (BCDCalInMsgLenField(src + curpos, 2, RIGHT))/2);
 			curpos += (ptrdecoder->Field36_l);MEMVIOLATIONCHECK
 			PRINT(Field36);
 		}
