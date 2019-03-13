@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 	if(argc == 2) //get message from stdin
 	{
 		Msg = (u8*)malloc((strlen(argv[1])) / 2);
-		memset(Msg, 0, (strlen(argv[1])) / 2));
+		memset(Msg, 0, (strlen(argv[1])) / 2);
 		if(!HexviewcharToHex(argv[1], Msg, (strlen(argv[1])) / 2))
 			{
 				printf("illegal hex string.\n");
@@ -41,10 +41,13 @@ int main(int argc, char **argv)
 
 	size_t MsgLen = CalSmalMemoryPieceVal(Msg, 2) + 2;
 	Decoder MsgDecoder = {0};
-	if(!DecodeMemMsg(Msg, &MsgDecoder, MsgLen))
+	int rlt = DecodeMemMsg(Msg, &MsgDecoder, MsgLen);
+	if(!rlt)
 		{
 			printf("message decode failed.\n");
 			return 0;
-		}	
+		}
+	else if(FATAL_ERROR == rlt)
+		printf("fatal error: memory vialation.\n");	
 	return 1;
 }

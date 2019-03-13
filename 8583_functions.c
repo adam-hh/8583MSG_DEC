@@ -264,7 +264,7 @@ unsigned int CalSmalMemoryPieceVal(const u8 *src, size_t l)
 	unsigned int rlt = 0;
 	for(size_t i = 0; i < l; i++)
 	{
-		rlt += ((*(src + i)) << (l -i -1));
+		rlt += ((*(src + i)) << (l -i -1) * 8);
 	}
 	return rlt;
 }
@@ -322,10 +322,10 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	size_t curpos = 0;  // current decoder engine offset
 	
 #define PRINT(x) printf(#x); printf(":"); PrintMemAsHexview(src + ptrdecoder->x, ptrdecoder->x##_l); printf("\n")
-#define PRINT_F(x) print(#x); printf(" not exist.\n")
+#define PRINT_F(x) printf(#x); printf(" not exist.\n")
 #define PRINT_E(x) printf("fatal error: from bitmap decoding process "); printf(#x); printf("\n") 
 #define PRINT_NDEF(x) printf("fatal error: undefined "); printf(#x); printf(" found.\n") 
-#define MEMVIOLATIONCHECK if((curpos + 2) > l) return FATAL_ERROR;
+#define MEMVIOLATIONCHECK if((curpos + 1) > l) return FATAL_ERROR;
 	ptrdecoder->FieldLen = curpos;
 	curpos += ((ptrdecoder->FieldLen_l) = 2);MEMVIOLATIONCHECK
 	PRINT(FieldLen);
@@ -351,7 +351,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	curpos += (ptrdecoder->Field1_l);MEMVIOLATIONCHECK
 	size_t BitMapLen = ptrdecoder->Field1_l;
 	u8 *BitMap = (u8*)malloc(BitMapLen);
-	memcpy(BitMap, src + curpos, BitMapLen);
+	memcpy(BitMap, src + ptrdecoder->Field1, BitMapLen);
 	PRINT(Field1);
 	
 #define TEST(x) BitMaptest(x, BitMap, BitMapLen)
@@ -583,7 +583,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field25 = curpos;
-			curpos += (ptrdecoder->Field25 = 1);MEMVIOLATIONCHECK
+			curpos += (ptrdecoder->Field25_l = 1);MEMVIOLATIONCHECK
 			PRINT(Field25);
 		}
 	else if(FAIL == rlt)
@@ -637,9 +637,27 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 			return FAIL;
 		}
 
-	if(TEST(33) || TEST(34) || TEST(35)) //Field33,34,35 are not defined.
+	if(TEST(33) || TEST(34)) //Field33,34 are not defined.
 		{
-			PRINT_NDEF(Field33_34_35);
+			PRINT_NDEF(Field33_34);
+			return FAIL;
+		}
+
+	rlt = TEST(35); //Field35
+	if(OK == rlt)
+		{
+			ptrdecoder->Field35 = curpos;
+			ptrdecoder->Field35_l = (1 + (BCDCalInMsgLenField(src + curpos, 1, RIGHT))/2);						
+			curpos += (ptrdecoder->Field35_l);MEMVIOLATIONCHECK
+			PRINT(Field35);
+		}
+	else if(FAIL == rlt)
+		{
+			PRINT_F(Field35);
+		}
+	else
+		{
+			PRINT_E(Field35);
 			return FAIL;
 		}
 
@@ -722,7 +740,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field41 = curpos;
-			curpos += (ptrdecoder->Field41 = 8);MEMVIOLATIONCHECK
+			curpos += (ptrdecoder->Field41_l = 8);MEMVIOLATIONCHECK
 			PRINT(Field41);
 		}
 	else if(FAIL == rlt)
@@ -899,7 +917,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field53 = curpos;
-			curpos += (ptrdecoder->Field53 = 8);MEMVIOLATIONCHECK
+			curpos += (ptrdecoder->Field53_l = 8);MEMVIOLATIONCHECK
 			PRINT(Field53);
 		}
 	else if(FAIL == rlt)
@@ -934,7 +952,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field55 = curpos;
-			ptrdecoder->Field55_l = (2 + ((BCDCalInMsgLenField(src + curpos, 2, RIGHT)) / 2));
+			ptrdecoder->Field55_l = (2 + BCDCal(src + curpos, 2, RIGHT));
 			curpos += (ptrdecoder->Field55_l);MEMVIOLATIONCHECK
 			PRINT(Field55);
 		}
