@@ -8,6 +8,10 @@ Head file for 8583 project
 typedef enum {RIGHT, LEFT, DEFAULT} HowNumberAlign;
 typedef unsigned char u8;
 typedef unsigned int u32;
+typedef long int s128;
+typedef char s8;
+typedef int s32;
+typedef unsigned long int u64;
 
 /*-----------------------
 Decoder to store the field's location
@@ -42,5 +46,7 @@ extern int HexviewcharToHex(const char *src, u8 *des, size_t l);
 extern unsigned int CalSmalMemoryPieceVal(const u8 *, size_t l);
 extern int DecodeMemMsg(const u8*, PtrDecoder, size_t l);
 extern int BitMaptest(const int, const u8*, size_t);
+
+extern void PrintMemAsHexview(const u8*, size_t l);
 
 
