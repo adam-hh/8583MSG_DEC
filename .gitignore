@@ -1,0 +1,2 @@
+#ignore some middle process files
+*.o
