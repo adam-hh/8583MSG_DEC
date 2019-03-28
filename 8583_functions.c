@@ -2,15 +2,12 @@
 Author HuHui(Adam)
 8583 functions all here
 ---------------------*/
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "8583.h"
 /*-------------------
 BCD decoder, from memory *src to char *des, when *src high 4 bits or low 4 bits in [0xA,0xF], decode fail.
 l is the length of *src, memory piece size.
 -------------------*/
-int BCDDecode(const u8 *src, char *des, size_t l)
+int BCDDecode(const u8 *src, s8 *des, size_t l)
 {
 	u8 valh, vall;
 	for( size_t i = 0; i < l; i++)
@@ -40,7 +37,7 @@ int BCDDecode(const u8 *src, char *des, size_t l)
 BCD encoder, from char *src to memory *des,when *src is not in ['0','9'], encode fail.
 l is the length of *des, memory piece size.
 -------------------*/
-int BCDEncode(const char *src, u8 *des, size_t l)
+int BCDEncode(s8 *src, u8 *des, size_t l)
 {
 	size_t src_l = strlen(src);
 	if(src_l != ((2*l)+1))
@@ -74,6 +71,7 @@ int BCDEncode(const char *src, u8 *des, size_t l)
 Calculate the number in memory *src, l is length of *src, memory piece size.
 align is the numbers align, can be RIGHT or LEFT.
 actually left align has a logical error by normal explain.
+Calculate range is the type unsigned int range, which is [0,429467291]
 -------------------*/
 unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align)
 {
@@ -148,7 +146,7 @@ unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align)
 
 /*----------------------
 When the length field of *src is the length of a BCD compressed data field.
-The length value must be even align.
+The length value must be extended to even align.
 ----------------------*/
 unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align)
 {
@@ -162,7 +160,7 @@ unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align)
 /*-------------------
 The memory *src to char *des, l is the *src length, as the function name, just to hex view.
 -------------------*/
-int Hexview(const u8 *src, char *des, size_t l)
+int Hexview(const u8 *src, s8 *des, size_t l)
 {
 	u8 valh, vall;
 	for( size_t i = 0; i < l; i++)
@@ -202,12 +200,13 @@ int Hexview(const u8 *src, char *des, size_t l)
 /*-------------------
 The char *src to memory *des, *src is the hex view string of some piece of memory, l is the *des length.
 -------------------*/
-int HexviewcharToHex(const char *src, u8 *des, size_t l)
+int HexviewcharToHex(const s8 *src, u8 *des, size_t l)
 {
 	size_t src_l = strlen(src);
 	if(src_l != (2*l))
 		{
 			printf("illegal hex view string size or memory size!\n");
+			printf("string len:%lu memory size: %lu", src_l, l);
 			return FAIL;
 		}
 	u8 valh, vall;
@@ -259,7 +258,7 @@ int HexviewcharToHex(const char *src, u8 *des, size_t l)
 /*-------------------
 Calculate the value of *src of memory, l less then 5
 -------------------*/
-unsigned int CalSmalMemoryPieceVal(const u8 *src, size_t l)
+u32 CalSmalMemoryPieceVal(const u8 *src, size_t l)
 {
 	unsigned int rlt = 0;
 	for(size_t i = 0; i < l; i++)
@@ -279,9 +278,9 @@ int BitMaptest(const int index, const u8 *src, size_t l)
 		{
 			printf("ivalid index %d or bitmap length %lu \n", index, l);
 			return FATAL_ERROR;
-		}
-	u8 *Mask = (char*)malloc(l);
-	memset(Mask, 0, l);
+		}	
+	u8 *Mask = (u8*)malloc(l + 10); // Apply 10 more bytes memory, avoid memory voilation crash on windows!
+	memset(Mask, 0, l + 10);
 	int mod = index % 8;
 	u8 chr = 0x0;
 	switch(mod)
@@ -296,15 +295,14 @@ int BitMaptest(const int index, const u8 *src, size_t l)
 		case 0: chr = 0x1;break;
 		default:printf("bitmap index error \n"); return FATAL_ERROR;
 	}
-	int i = ((index -1) / 8);
-	*(Mask + i) = chr;
-
+	size_t i = ((index -1) / 8);	
+	*(Mask + i) = chr;	
 	for(size_t j = 0; j < l; j++)
 		{
 			if((*(Mask + j)) & (*(src + j)))
 				return OK;
-		}
-	free(Mask);
+		}	
+	free(Mask);	
 	return FAIL;
 }
 
@@ -321,7 +319,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	ptrdecoder->Msgmem_l = l;
 	size_t curpos = 0;  // current decoder engine offset
 	
-#define PRINT(x) printf(#x); printf(":"); PrintMemAsHexview(src + ptrdecoder->x, ptrdecoder->x##_l); printf("\n")
+#define PRINT(x) printf(#x); printf(":"); PrintMemAsHexview(src + ptrdecoder->x, (size_t)(ptrdecoder->x##_l)); printf("\n")
 #define PRINT_F(x) printf(#x); printf(" not exist.\n")
 #define PRINT_E(x) printf("fatal error: from bitmap decoding process "); printf(#x); printf("\n") 
 #define PRINT_NDEF(x) printf("fatal error: undefined "); printf(#x); printf(" found.\n") 
@@ -348,20 +346,17 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 		ptrdecoder->Field1_l = 16;
 	else
 		ptrdecoder->Field1_l = 8;
-	curpos += (ptrdecoder->Field1_l);MEMVIOLATIONCHECK
-	size_t BitMapLen = ptrdecoder->Field1_l;
-	u8 *BitMap = (u8*)malloc(BitMapLen);
-	memcpy(BitMap, src + ptrdecoder->Field1, BitMapLen);
+	curpos += (ptrdecoder->Field1_l);MEMVIOLATIONCHECK	
 	PRINT(Field1);
 	
-#define TEST(x) BitMaptest(x, BitMap, BitMapLen)
-	int rlt = FAIL;           // Field2
-	rlt = TEST(2);
+#define TEST(x) BitMaptest(x, src + ptrdecoder->Field1, (size_t)(ptrdecoder->Field1_l))
+	int rlt = FAIL; // Field2	
+	rlt = TEST(2);	
 	if(OK == rlt)
 		{
-			ptrdecoder->Field2 = curpos;
-			ptrdecoder->Field2_l = (1 + (BCDCalInMsgLenField((src + curpos), 1, RIGHT)/2));
-			curpos += (ptrdecoder->Field2_l);MEMVIOLATIONCHECK
+			ptrdecoder->Field2 = curpos;			
+			ptrdecoder->Field2_l = (1 + (BCDCalInMsgLenField((src + curpos), 1, RIGHT)/2));			
+			curpos += (ptrdecoder->Field2_l);MEMVIOLATIONCHECK			
 			PRINT(Field2);
 		}
 	else if(FAIL == rlt)
@@ -379,7 +374,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 		{
 			ptrdecoder->Field3 = curpos;
 			curpos += (ptrdecoder->Field3_l = 3);MEMVIOLATIONCHECK
-			PRINT(Field3);
+			PRINT(Field3);			
 		}
 	else if(FAIL == rlt)
 		{
@@ -389,8 +384,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 		{
 			PRINT_E(Field3);
 			return FAIL;
-		}
-
+		}	
 	rlt = TEST(4); //Field4
 	if(OK == rlt)
 		{
@@ -780,7 +774,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field44 = curpos;
-			ptrdecoder->Field44_l = (1 + ((BCDCalInMsgLenField(src + curpos, 1, RIGHT))/2));
+			ptrdecoder->Field44_l = (1 + (BCDCal(src + curpos, 1, RIGHT)));
 			curpos += ptrdecoder->Field44_l;MEMVIOLATIONCHECK
 			PRINT(Field44);
 		}
@@ -804,7 +798,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 	if(OK == rlt)
 		{
 			ptrdecoder->Field46 = curpos;
-			ptrdecoder->Field46_l = (2 + ((BCDCalInMsgLenField(src + curpos, 2, RIGHT))/2));
+			ptrdecoder->Field46_l = (2 + (BCDCal(src + curpos, 2, RIGHT)));
 			curpos += (ptrdecoder->Field46_l);MEMVIOLATIONCHECK
 			PRINT(Field46);
 		}
@@ -1122,7 +1116,7 @@ int DecodeMemMsg(const u8* src, PtrDecoder ptrdecoder, size_t l)
 #undef PRINT_E
 #undef PRINT_NDEF
 #undef MEMVIOLATIONCHECK
-	free(BitMap);
+	//free(BitMap);
 	return OK;
 }
 
@@ -1133,14 +1127,14 @@ Print the memory piece of *src as hexview string
 void PrintMemAsHexview(const u8 *src, size_t l)
 {
 	s8 *HexviewStr;
-	HexviewStr = (s8*)malloc((2*l) + 1);
-	memset(HexviewStr, 0, (2*l) + 1);
+	HexviewStr = (s8*)malloc((2*l) + 10); // Apply 10 more bytes memory, avoid memory voilation crash on windows!
+	memset(HexviewStr, 0, (2*l) + 10);
 	if(Hexview(src, HexviewStr, l))
 		{
 			printf("%s", HexviewStr);
 		}
 	else
-		printf("print memory as hexview has an unknown error.\n");
+		printf("print memory as hexview has an unknown error.\n");	
 	free(HexviewStr);
 }
 

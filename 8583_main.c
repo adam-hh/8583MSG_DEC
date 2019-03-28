@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "8583.h"
-#define VER "V001"
+#define VERL "S001" //minor version
 int main(int argc, char **argv)
 {
 	char MsgDef[] = "00d460000100003060100000000301003020048000c28031030000000000000001000018032006363030303431363938343936343032353039344130303100316d63633d343630266d6e633d30266c61633d39333430266369643d3439373331353600964132303638303130303230323032303139303030303034303247323130303130303034383033303036303030313438303430303844304136414134443035303038333230303034202041333031383133353332353632383431373030303134380014100000120000014645414341433734ac";
@@ -11,8 +11,8 @@ int main(int argc, char **argv)
 	{
 		if(strcmp(argv[1], "-version") == 0)
 		{
-			printf(VER);
-			printf("\n");
+			printf(VERB VERL "\n");
+			//printf("\n");
 			return 1;
 		}
 		else
@@ -46,7 +46,11 @@ int main(int argc, char **argv)
 		{
 			printf("message lengh check failed,usage: %s <message body>\ndecoded length is %u, actual string length of the message is %lu\n", argv[0], CalSmalMemoryPieceVal(Msg, 2), MsgLen - 2);
 			return 0;
-		} else printf("decodeing...\n");		
+		} else
+		{
+			printf("no message specified, usage: %s <message body>\nspecify a message like:\n%s\n", argv[0], MsgDef);
+			printf("decodeing...\n");
+		} 		
 	}
 
 	size_t MsgLen = CalSmalMemoryPieceVal(Msg, 2) + 2;
@@ -58,6 +62,9 @@ int main(int argc, char **argv)
 			return 0;
 		}
 	else if(FATAL_ERROR == rlt)
-		printf("fatal error: memory vialation.\n");	
+		{
+			printf("fatal error: memory vialation.\n");	
+			return 0;
+		}
 	return 1;
 }

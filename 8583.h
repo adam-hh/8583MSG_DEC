@@ -2,19 +2,28 @@
 Author Huhui(Adam)
 Head file for 8583 project
 ----------------*/
+#ifndef _8583_
+#define _8583_
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #define OK 1
 #define FAIL 0
 #define FATAL_ERROR -1
+#define VERB "B001"  // major version
+
 typedef enum {RIGHT, LEFT, DEFAULT} HowNumberAlign;
 typedef unsigned char u8;
+typedef unsigned short int u16;
 typedef unsigned int u32;
-typedef long int s128;
-typedef char s8;
-typedef int s32;
 typedef unsigned long int u64;
+typedef signed char s8;
+typedef short int s16;
+typedef int s32;
+typedef long int s64;
 
 /*-----------------------
-Decoder to store the field's location
+Decoder to store the field's location, trace the memory pointer.
 -----------------------*/
 #define F(x) u32 Field##x, Field##x##_l
 typedef struct
@@ -37,16 +46,16 @@ typedef struct
 }*PtrDecoder, Decoder;
 #undef F
 
-extern int BCDDecode(const u8 *src, char *des, size_t l);
-extern int BCDEncode(const char *src, u8 *des, size_t l);
+extern int BCDDecode(const u8 *src, s8 *des, size_t l);
+extern int BCDEncode(s8 *src, u8 *des, size_t l);
 extern unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align);
 extern unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align);
-extern int Hexview(const u8 *src, char *des, size_t l);
-extern int HexviewcharToHex(const char *src, u8 *des, size_t l);
-extern unsigned int CalSmalMemoryPieceVal(const u8 *, size_t l);
+extern int Hexview(const u8 *src, s8 *des, size_t l);
+extern int HexviewcharToHex(const s8 *src, u8 *des, size_t l);
+extern u32 CalSmalMemoryPieceVal(const u8 *, size_t l);
 extern int DecodeMemMsg(const u8*, PtrDecoder, size_t l);
 extern int BitMaptest(const int, const u8*, size_t);
 
 extern void PrintMemAsHexview(const u8*, size_t l);
 
-
+#endif
