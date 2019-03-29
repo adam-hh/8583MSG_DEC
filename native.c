@@ -88,7 +88,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_thaiddd_javaguiex_core_NativeC_nativeDec
     (*env)->SetObjectArrayElement(env, jobjArray, 0, jfieldLen);
     free(fieldLen);
 
-    size_t fieldTPDU_l = (MsgDecoder.FieldTPDU) * 2 + 1;
+    size_t fieldTPDU_l = (MsgDecoder.FieldTPDU_l) * 2 + 1;
     s8 *fieldTPDU = (s8*)malloc(fieldTPDU_l);
     memset(fieldTPDU, 0, fieldTPDU_l);
     Hexview(msg + MsgDecoder.FieldTPDU, fieldTPDU, MsgDecoder.FieldTPDU_l);
@@ -99,7 +99,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_thaiddd_javaguiex_core_NativeC_nativeDec
     size_t fieldMsghead_l = (MsgDecoder.FieldMsghead_l) *2 + 1;
     s8 *fieldMsghead = (s8*)malloc(fieldMsghead_l);
     memset(fieldMsghead, 0, fieldMsghead_l);
-    Hexview(msg + MsgDecoder.FieldMsghead_l, fieldMsghead, MsgDecoder.FieldMsghead_l);
+    Hexview(msg + MsgDecoder.FieldMsghead, fieldMsghead, MsgDecoder.FieldMsghead_l);
     jstring jfieldMsghead = (*env)->NewStringUTF(env, fieldMsghead);
     (*env)->SetObjectArrayElement(env, jobjArray, 2, jfieldMsghead);
     free(fieldMsghead);
