@@ -163,7 +163,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_thaiddd_javaguiex_core_NativeC_nativeDec
     }
     if(CalSmalMemoryPieceVal(msg, 2) != (msgLen - 2)) 
 	  {
-		  printf("message lengh check failed.\nexpected length is %u, actual string length of the message is %u\n", CalSmalMemoryPieceVal(msg, 2) + 2, msgLen);
+		  printf("message lengh check failed.\nexpected length is %u, actual string length of the message is %lu\n", CalSmalMemoryPieceVal(msg, 2) + 2, msgLen);
       #ifdef STDOUTREDERECT
       fclose(stdout);
       #endif

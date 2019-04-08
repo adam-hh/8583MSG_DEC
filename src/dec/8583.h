@@ -17,7 +17,7 @@ typedef unsigned char u8;
 typedef unsigned short int u16;
 typedef unsigned int u32;
 typedef unsigned long int u64;
-typedef signed char s8;
+typedef char s8;
 typedef short int s16;
 typedef int s32;
 typedef long int s64;
@@ -47,7 +47,7 @@ typedef struct
 #undef F
 
 extern int BCDDecode(const u8 *src, s8 *des, size_t l);
-extern int BCDEncode(s8 *src, u8 *des, size_t l);
+extern int BCDEncode(const s8 *src, u8 *des, size_t l);
 extern unsigned int BCDCal(const u8 *src, size_t l, HowNumberAlign align);
 extern unsigned int BCDCalInMsgLenField(const u8 *src, size_t l, HowNumberAlign align);
 extern int Hexview(const u8 *src, s8 *des, size_t l);

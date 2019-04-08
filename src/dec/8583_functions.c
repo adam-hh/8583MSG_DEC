@@ -37,7 +37,7 @@ int BCDDecode(const u8 *src, s8 *des, size_t l)
 BCD encoder, from char *src to memory *des,when *src is not in ['0','9'], encode fail.
 l is the length of *des, memory piece size.
 -------------------*/
-int BCDEncode(s8 *src, u8 *des, size_t l)
+int BCDEncode(const s8 *src, u8 *des, size_t l)
 {
 	size_t src_l = strlen(src);
 	if(src_l != ((2*l)+1))
@@ -231,10 +231,10 @@ int HexviewcharToHex(const s8 *src, u8 *des, size_t l)
 						case 'f': valh = 0x0F << 4;break;
 						default: printf("illegal hex char %c at index %lu\n", *(src + (2*i)), (2*i));return FAIL;
 					}
-				if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
+			if(((*(src + (2*i) + 1)) > 0x29) && ((*(src + (2*i) +1)) < 0x40)) 
 					vall = (*(src + (2*i) +1) - 0x30);
-				else
-					switch(*(src + (2*i) +1))
+			else
+				switch(*(src + (2*i) +1))
 					{
 						case 'A': ;
 						case 'a': vall = 0x0A;break;
@@ -250,7 +250,7 @@ int HexviewcharToHex(const s8 *src, u8 *des, size_t l)
 						case 'f': vall = 0x0F;break;
 						default: printf("illegal hex char %c at index %lu\n", *(src + (2*i) + 1), (2*i) + 1);return FAIL;
 					}
-				*(des + i) = (valh + vall);
+			*(des + i) = (valh + vall);
 		}
 	return OK;
 }
