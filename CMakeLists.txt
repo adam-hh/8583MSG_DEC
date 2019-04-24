@@ -22,7 +22,8 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(decRES
     ${CMAKE_SOURCE_DIR}/dec/8583.h
 	${CMAKE_SOURCE_DIR}/dec/8583_main.c
-	${CMAKE_SOURCE_DIR}/dec/8583_functions.c
+	${CMAKE_SOURCE_DIR}/dec/tools.c
+	${CMAKE_SOURCE_DIR}/dec/decoder.c
 )
 # Tell CMake to create the helloworld executable
 add_executable(dec ${decRES})
