@@ -1,9 +1,2 @@
-#ignore some middle process files
-*.o
-*.so
-*.dylib
-*.dll
-*.out
-*.si4project/
-*.vscode/
-output/
+output/*
+!output/mingw32-make.exe

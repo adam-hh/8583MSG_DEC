@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+project(tutorial)
+set(CMAKE_SOURCE_DIR  "src")
+set(CMAKE_BINARY_DIR  "output")
+set(CMAKE_MAKE_PROGRAM "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\mingw32-make.exe")
+set(CMAKE_RC_COMPILER "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\windres.exe")
+set(CMAKE_SH "D:\\cygwin64\\bin\\sh.exe")
+# Find includes in corresponding build directories
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Instruct CMake to run moc automatically when needed
+set(CMAKE_AUTOMOC ON)
+# Create code from a list of Qt designer ui files
+set(CMAKE_AUTOUIC ON)
+
+# Find the QtWidgets library
+set(CMAKE_PREFIX_PATH "C:\\Qt\\Qt5.12.2\\5.12.2\\mingw73_64\\lib\\cmake")
+
+find_package(Qt5Widgets CONFIG REQUIRED)
+
+# Populate a CMake variable with the sources
+set(decRES
+    ${CMAKE_SOURCE_DIR}/dec/8583.h
+	${CMAKE_SOURCE_DIR}/dec/8583_main.c
+	${CMAKE_SOURCE_DIR}/dec/8583_functions.c
+)
+# Tell CMake to create the helloworld executable
+add_executable(dec ${decRES})
