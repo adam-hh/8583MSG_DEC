@@ -1,10 +1,17 @@
 #include "8583dump.h"
+#include <pthread.h>
 extern void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
 extern void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
+void *writeInThread(void *arg)	{
+	loop(0, callbackWriteToBuff, (u8*)arg);
+	return NULL;
+}
 int main()
 {
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
+	// setbuf(stdout, NULL);
+	// setbuf(stderr, NULL);
+	s8 stdoutbuf[BUFSIZ] = {0};
+	setbuf(stdout, stdoutbuf);
 	setbuf(stdin, NULL);
 	#ifdef WIN32
 	/* Load Npcap and its functions. */
@@ -15,25 +22,25 @@ int main()
 	}
 	printf("Npcap Loaded\n");
 	#endif
-	if(printDevList() == 1)
-		printf("printDevList sucess.\n");
-	else
-		printf("printDevList failed.\n");
+	// if(printDevList() == 1)
+	// 	printf("printDevList sucess.\n");
+	// else
+	// 	printf("printDevList failed.\n");
 
 	if(openDev() == 1)
 		printf("openDev sucess.\n");
 	else
 		printf("openDev failed.\n");
-	
-	printf("Keyin the filter:\n");
+	//fflush(stdout);
+	printf("Keyin the filter:\n"); 
+	fflush(stdout);	
 	s8 infilter[100] = {0};
-	fflush(stdin);
 	gets(infilter);
 	if(setFilter(infilter) == 1)
 		printf("setFilter %s sucess.\n", infilter);
 	else
 		printf("setFilter %s failed.\n", infilter);
-	
+	//fflush(stdout);
 	/*while(1)
 	{
 		int rlt = printNextPackage();
@@ -55,18 +62,24 @@ int main()
 	*/
 	//loop(0, callbackPrintNextPackage, NULL);	
 	userBuff *usbf;
-	if((usbf = initUserBuff(100)) == NULL)
-		printf("initUserBuff(100) failed.\n");
-	printf("initUserBuff(100) sucessed.\n");
+	if((usbf = initUserBuff(10000)) == NULL)
+		printf("initUserBuff(10000) failed.\n");
+	printf("initUserBuff(10000) sucessed.\n");
 
-	printf("Keyin howmany packages to capture:\n");
-	fflush(stdin);
-	int in;
-	scanf("%d", &in);
+	// printf("Keyin howmany packages to capture:\n");
 	// fflush(stdin);
-	loop(in, callbackWriteToBuff, (u8*)usbf);
+	// int in;
+	// scanf("%d", &in);
+	// fflush(stdin);
+	pthread_t pt1;
+	if (pthread_create(&pt1, NULL, writeInThread, (void *)usbf)) {
+		printf("error creating thread.");
+		abort();
+  	}	
+	//loop(in, callbackWriteToBuff, (u8*)usbf);
 
 	tcpDataBlock tdbk = {0};	
+	//sleep(1);
 	while(1)
 	{
 		int rlt = readFromUserBuff(usbf, &tdbk);
@@ -99,16 +112,22 @@ int main()
 		}
 		else if(rlt == 0)
 			{
-				printf("Empty userBuff.\n");
-				break;
+				fflush(stdout);
+				sleep(1);
 			}
 		else
 			{
 				printf("Unkown error occured readFromuserBuff.\n");
+				pcap_breakloop(PHandle.handle);
 				break;
 			}
-	}
+	}	
+	if (pthread_join(pt1, NULL)) {
+    	printf("error joining thread.");
+    	abort();
+  	}
 	if(releaseUserBuff(usbf))
-		printf("releaseUserBuff sucess.\n");
-	return 1;
+	printf("releaseUserBuff sucess.\n");
+	fflush(stdout);
+	exit(0);
 }

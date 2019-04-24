@@ -153,6 +153,7 @@ int openDev()
         "\"\\Device\\NPF_{DEF8ED50-DD41-483F-AA19-363C874D714E}\"\n\n"
     );
     s8 iname[100] = {0};
+    fflush(stdout);
     gets(iname);
 
     /* Open the adapter */

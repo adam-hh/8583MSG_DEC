@@ -8,7 +8,9 @@
  *4.include the headers from npcap-sdk-1.01 and necessary standard and OS dependent socket headers.
  *All modules who want to implement or involve these fields should include this header
  */
+#ifndef DUMP8583
 #define DUMP8583
+
 #ifdef _MSC_VER
 	/*
 	 * we do not want the warnings about the old deprecated and unsecure CRT functions
@@ -158,3 +160,5 @@ extern int readFromUserBuff(userBuff *ub, tcpDataBlock*);
 
 //release the user buffer
 extern int releaseUserBuff(userBuff *);
+
+#endif
