@@ -4,7 +4,7 @@ Head file for 8583 project
 ----------------*/
 #ifndef _8583_
 #define _8583_
-#include "../../Include/adamhh/primitive_type.h"
+#include "primitive_type.h"
 #define OK 1
 #define FAIL 0
 #define FATAL_ERROR -1
