@@ -5,9 +5,13 @@ set(PRODIR "F:\\DevProjects\\8583MSG_DEC")
 
 set(CMAKE_SOURCE_DIR  "src")
 set(CMAKE_BINARY_DIR  "output")
+set(CMAKE_C_COMPILER "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\gcc.exe")
+set(CMAKE_CXX_COMPILER "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\g++.exe")
 set(CMAKE_MAKE_PROGRAM "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\mingw32-make.exe")
 set(CMAKE_RC_COMPILER "C:\\Qt\\Qt5.12.2\\Tools\\mingw730_64\\bin\\windres.exe")
 set(CMAKE_SH "D:\\cygwin64\\bin\\sh.exe")
+set(CMAKE_C_FLAGS "-O -Wall -m64")
+set(CMAKE_CXX_FLAGS "-O -Wall -m64")
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed
