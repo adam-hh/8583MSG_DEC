@@ -56,9 +56,16 @@ set(dumpRES
 	${CMAKE_SOURCE_DIR}/dump/callback.c
 	${CMAKE_SOURCE_DIR}/dump/userbuff.c
 )
+set(GUIRES
+	${CMAKE_SOURCE_DIR}/GUI/main.cpp
+	${CMAKE_SOURCE_DIR}/GUI/mainWindow.cpp	
+	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
+)
 # Tell CMake to create the helloworld executable
 add_executable(dec ${decRES})
 add_executable(dump ${dumpRES})
+add_executable(gui WIN32 ${GUIRES})
 add_library(decl STATIC ${decRES})
 add_library(dumpl STATIC ${dumpRES})
 target_link_libraries(dump "F:\\DevProjects\\8583MSG_DEC\\Lib\\x64\\wpcap.lib")
+target_link_libraries(gui Qt5::Core Qt5::Widgets)
