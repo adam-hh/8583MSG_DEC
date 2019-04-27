@@ -1,14 +1,23 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "interfaceDialog.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+DEC::MainWindow::MainWindow() :
+    ui(new Ui::MainWindow),
+    itf(new DEC::interfaceDialog(this))
 {
     ui->setupUi(this);
+    connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
 }
 
-MainWindow::~MainWindow()
+DEC::MainWindow::~MainWindow()
 {
     delete ui;
+    delete itf;
+}
+
+void DEC::MainWindow::findInterface()
+{
+    itf->setModal(true);
+    itf->show();
 }

@@ -4,19 +4,23 @@
 #include <QtWidgets/QMainWindow>
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
+}
+namespace DEC {
+class interfaceDialog;
+class MainWindow : public QMainWindow{
+    Q_OBJECT
+    public:
+        explicit MainWindow();
+        ~MainWindow();
+    private slots:
+        void findInterface();
+
+    private:
+        Ui::MainWindow *ui;
+        DEC::interfaceDialog *itf;
+    };
 }
 
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-
-public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-
-private:
-    Ui::MainWindow *ui;
-};
 
 #endif // MAINWINDOW_H

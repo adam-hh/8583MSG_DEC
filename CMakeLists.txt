@@ -59,6 +59,7 @@ set(dumpRES
 set(GUIRES
 	${CMAKE_SOURCE_DIR}/GUI/main.cpp
 	${CMAKE_SOURCE_DIR}/GUI/mainWindow.cpp	
+	${CMAKE_SOURCE_DIR}/GUI/interfaceDialog.cpp
 	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
 )
 # Tell CMake to create the helloworld executable
