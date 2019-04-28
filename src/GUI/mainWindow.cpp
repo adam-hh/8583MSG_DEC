@@ -20,4 +20,13 @@ void DEC::MainWindow::findInterface()
 {
     itf->setModal(true);
     itf->show();
+    itf->run();
+}
+void DEC::MainWindow::enablePbt4()
+{
+    ui->pushButton_4->setEnabled(true);
+}
+void DEC::MainWindow::disablePtt4()
+{
+    ui->pushButton_4->setEnabled(false);
 }

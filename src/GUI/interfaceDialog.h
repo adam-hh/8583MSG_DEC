@@ -1,6 +1,9 @@
 #ifndef INTERFACEDIALOG_H
 #define INTERFACEDIALOG_H
 #include <QtWidgets/QDialog>
+#include <QtCore/QString>
+#include <QtCore/QVector>
+#include <QtCore/QThread>
 
 namespace Ui {
     class interfaceDialog;
@@ -13,6 +16,9 @@ class interfaceDialog : public QDialog{
     public:
         interfaceDialog(QWidget *parent = nullptr);
         ~interfaceDialog();
+        static QVector<QVector<QString>> devList;
+        static int scanDev();
+        void run();
     private slots:
         void accept();
         void reject();

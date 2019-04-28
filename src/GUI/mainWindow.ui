@@ -85,6 +85,9 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QTreeWidget" name="treeWidget">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>670</width>
@@ -576,6 +579,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_4">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
