@@ -22,6 +22,7 @@ class interfaceDialog : public QDialog{
     private slots:
         void accept();
         void reject();
+        void itemPress();
     private:
         Ui::interfaceDialog *ui;
     };

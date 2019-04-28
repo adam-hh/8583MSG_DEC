@@ -8,6 +8,7 @@ DEC::MainWindow::MainWindow() :
 {
     ui->setupUi(this);
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
+    connect(this, SIGNAL(interfaceScaned()), this, SLOT(enabltPbt4()));
 }
 
 DEC::MainWindow::~MainWindow()
@@ -22,11 +23,13 @@ void DEC::MainWindow::findInterface()
     itf->show();
     itf->run();
 }
-void DEC::MainWindow::enablePbt4()
+
+void DEC::MainWindow::enabltPbt4()
 {
     ui->pushButton_4->setEnabled(true);
 }
-void DEC::MainWindow::disablePtt4()
+void DEC::MainWindow::setPbt4(bool bl)
 {
-    ui->pushButton_4->setEnabled(false);
+    if(bl)
+        emit interfaceScaned();
 }

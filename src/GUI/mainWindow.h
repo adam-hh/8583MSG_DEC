@@ -13,8 +13,11 @@ class MainWindow : public QMainWindow{
     public:
         explicit MainWindow();
         ~MainWindow();
-        void enablePbt4();
-        void disablePtt4();
+        void setPbt4(bool bl);
+    public slots:
+        void enabltPbt4();
+    signals:
+        void interfaceScaned();
     private slots:
         void findInterface();
 

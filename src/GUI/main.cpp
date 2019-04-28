@@ -5,7 +5,7 @@
 
 void *threadScan(void *arg){
     DEC::interfaceDialog::scanDev();
-    //static_cast<DEC::MainWindow*>(arg)->disablePtt4();
+    static_cast<DEC::MainWindow*>(arg)->interfaceScaned();
     return NULL;
 }
 
@@ -19,11 +19,5 @@ int main(int argc, char *argv[])
         printf("error creating thread.");
         abort();
     }
-    // if(pthread_join (scan, NULL)){
-    //     printf("error joining thread.");
-    //     abort();
-    // }else{
-    //     u->enablePbt4();
-    // }    
     return app.exec();
 }
