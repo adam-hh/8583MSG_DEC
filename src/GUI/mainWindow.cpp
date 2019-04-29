@@ -10,6 +10,7 @@ DEC::MainWindow::MainWindow() :
     ui->setupUi(this);
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
     connect(this, SIGNAL(interfaceScaned(bool)), this, SLOT(enabltPbt4(bool)));
+    connect(this, SIGNAL(newData(QString)), this, SLOT(appendNewData(QString)));
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
@@ -43,8 +44,17 @@ void DEC::MainWindow::setPbt(bool bl)
 }
 void *threadLoop(void* arg)
 {
-    QTreeWidget *qtw = static_cast<QTreeWidget*>(arg);
+    DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
+    while(true)
+    {
+        //emit um->newData("Hello");
+        Sleep(1000);
+    }
 
+}
+int DEC::MainWindow::appendNewData(QTreeWidgetItem *item)
+{
+    //ui->textBrowser->append(str);
 }
 int DEC::MainWindow::loop()
 {
@@ -53,7 +63,7 @@ int DEC::MainWindow::loop()
     ui->pushButton_2->setEnabled(true);
     ui->pushButton_3->setEnabled(true);
     pthread_t pLoop;
-    if (pthread_create(&pLoop, NULL, threadLoop, static_cast<void *>(ui->treeWidget))) {
+    if (pthread_create(&pLoop, NULL, threadLoop, static_cast<void *>(this))) {
         printf("error creating thread.");
         abort();
     }
@@ -64,6 +74,7 @@ int DEC::MainWindow::loop()
 }
 int DEC::MainWindow::expandData()
 {
+    QMessageBox::information(this, "Title", "Error opening adapter.");
     return 1;
 }
 int DEC::MainWindow::decode()
