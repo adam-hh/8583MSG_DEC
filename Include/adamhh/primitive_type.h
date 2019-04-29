@@ -1,3 +1,4 @@
+#ifndef PRIMITIVE_TYPE
 #define PRIMITIVE_TYPE
 
 typedef char s8;
@@ -10,3 +11,4 @@ typedef long s64;
 typedef unsigned long u64;
 #define true 1
 #define false 0
+#endif

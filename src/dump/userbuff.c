@@ -26,6 +26,7 @@ extern int readFromUserBuff(userBuff *ub, tcpDataBlock*);
 //release the user buffer
 extern int releaseUserBuff(userBuff *);
 
+userBuff *usbf = NULL;
 userBuff* initUserBuff(size_t sz)
 {
     userBuff *ub;

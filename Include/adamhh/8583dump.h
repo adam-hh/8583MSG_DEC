@@ -8,19 +8,14 @@
  *4.include the headers from npcap-sdk-1.01 and necessary standard and OS dependent socket headers.
  *All modules who want to implement or involve these fields should include this header
  */
+#pragma once
 #ifndef DUMP8583
 #define DUMP8583
 
-#ifdef _MSC_VER
-	/*
-	 * we do not want the warnings about the old deprecated and unsecure CRT functions
-	 * since these examples can be compiled under *nix as well
-	 */
-#define _CRT_SECURE_NO_WARNINGS
-#endif
 #include <stdlib.h>
 #include <stdio.h>
-#include <pcap.h>
+#include "pcap.h"
+#include "protocal_head.h"
 #ifndef WIN32
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -28,10 +23,18 @@
 	#include <winsock.h>
 #endif
 
-#ifndef PROTOCAL_HEAD
-#include <protocal_head.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifdef _MSC_VER
+	/*
+	 * we do not want the warnings about the old deprecated and unsecure CRT functions
+	 * since these examples can be compiled under *nix as well
+	 */
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 #define EXTRAINFOSIZE 30
+
 
 //a global pcap_t handle, for the whole life cycle of this program.
 //this should be an unique handle for all components.
@@ -49,7 +52,7 @@ extern PcapHandle PHandle;
 #ifdef WIN32
 #include <tchar.h>
 #endif
-extern int LoadNpcapDlls();
+extern int LoadNpcapDll();
 
 /*Function:printDevList
  *Description:print the device list to stdout
@@ -103,6 +106,8 @@ extern int printTCPTraffic(const s8*);
  *user* passed to u_char*, pcap_pkthdr* point to the current pcap_pkthdr, u_char*  point to the data memory first byte address
  */
 extern int loop(int cnt, pcap_handler callback, u8 *user);
+extern void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
+extern void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
 
 //declear a struct for java native functions
 //the 8583 message datas are orgnized with this struct.
@@ -160,5 +165,9 @@ extern int readFromUserBuff(userBuff *ub, tcpDataBlock*);
 
 //release the user buffer
 extern int releaseUserBuff(userBuff *);
+
+#ifdef __cplugsplus
+}
+#endif
 
 #endif

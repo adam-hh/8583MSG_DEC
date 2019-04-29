@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "interfaceDialog.h"
+#include <pthread.h>
 
 DEC::MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
@@ -8,7 +9,11 @@ DEC::MainWindow::MainWindow() :
 {
     ui->setupUi(this);
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
-    connect(this, SIGNAL(interfaceScaned()), this, SLOT(enabltPbt4()));
+    connect(this, SIGNAL(interfaceScaned(bool)), this, SLOT(enabltPbt4(bool)));
+
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
+    connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
+    connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
 }
 
 DEC::MainWindow::~MainWindow()
@@ -21,15 +26,62 @@ void DEC::MainWindow::findInterface()
 {
     itf->setModal(true);
     itf->show();
-    itf->run();
+    itf->showDevList();
 }
 
-void DEC::MainWindow::enabltPbt4()
+void DEC::MainWindow::enabltPbt4(bool bl)
 {
-    ui->pushButton_4->setEnabled(true);
+    ui->pushButton_4->setEnabled(bl);
 }
 void DEC::MainWindow::setPbt4(bool bl)
 {
-    if(bl)
-        emit interfaceScaned();
+    emit interfaceScaned(bl);
+}
+void DEC::MainWindow::setPbt(bool bl)
+{
+    ui->pushButton->setEnabled(bl);
+}
+void *threadLoop(void* arg)
+{
+    QTreeWidget *qtw = static_cast<QTreeWidget*>(arg);
+
+}
+int DEC::MainWindow::loop()
+{
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_4->setEnabled(false);
+    ui->pushButton_2->setEnabled(true);
+    ui->pushButton_3->setEnabled(true);
+    pthread_t pLoop;
+    if (pthread_create(&pLoop, NULL, threadLoop, static_cast<void *>(ui->treeWidget))) {
+        printf("error creating thread.");
+        abort();
+    }
+
+
+
+    return 1;
+}
+int DEC::MainWindow::expandData()
+{
+    return 1;
+}
+int DEC::MainWindow::decode()
+{
+    return 1;
+}
+int DEC::MainWindow::stop()
+{
+    ui->pushButton_2->setEnabled(false);
+    ui->pushButton_3->setEnabled(false);
+    ui->pushButton->setEnabled(true);
+    ui->pushButton_4->setEnabled(true);
+    return 1;
+}
+int DEC::MainWindow::restart()
+{
+    ui->pushButton_4->setEnabled(false);
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_2->setEnabled(true);
+    return 1;
 }

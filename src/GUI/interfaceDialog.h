@@ -5,6 +5,8 @@
 #include <QtCore/QVector>
 #include <QtCore/QThread>
 
+#include "pcap.h"
+
 namespace Ui {
     class interfaceDialog;
 }
@@ -16,9 +18,10 @@ class interfaceDialog : public QDialog{
     public:
         interfaceDialog(QWidget *parent = nullptr);
         ~interfaceDialog();
-        static QVector<QVector<QString>> devList;
+        //static QVector<QVector<QString>> devList;
+        //static pcap_if_t *alldevs;
         static int scanDev();
-        void run();
+        void showDevList();
     private slots:
         void accept();
         void reject();

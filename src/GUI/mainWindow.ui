@@ -94,6 +94,9 @@
               <height>400</height>
              </size>
             </property>
+            <property name="columnCount">
+             <number>7</number>
+            </property>
             <column>
              <property name="text">
               <string>No.</string>
@@ -132,7 +135,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeWidget" name="treeWidget">
+           <widget class="QTreeWidget" name="treeWidget2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>

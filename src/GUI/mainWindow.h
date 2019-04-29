@@ -14,10 +14,16 @@ class MainWindow : public QMainWindow{
         explicit MainWindow();
         ~MainWindow();
         void setPbt4(bool bl);
+        void setPbt(bool bl);
     public slots:
-        void enabltPbt4();
+        void enabltPbt4(bool bl);
+        int loop(); //loop
+        int expandData(); //expand to treewidget
+        int decode(); //decode show in textbrowser
+        int stop(); //stop loop
+        int restart(); // restart loop
     signals:
-        void interfaceScaned();
+        void interfaceScaned(bool bl);
     private slots:
         void findInterface();
 

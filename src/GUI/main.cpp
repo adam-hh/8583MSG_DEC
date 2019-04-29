@@ -5,7 +5,7 @@
 
 void *threadScan(void *arg){
     DEC::interfaceDialog::scanDev();
-    static_cast<DEC::MainWindow*>(arg)->interfaceScaned();
+    static_cast<DEC::MainWindow*>(arg)->setPbt4(true);
     return NULL;
 }
 

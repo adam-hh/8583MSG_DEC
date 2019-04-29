@@ -1,7 +1,7 @@
+#ifndef PROTOCAL_HEAD
 #define PROTOCAL_HEAD
-#ifndef PRIMITIVE_TYPE
 #include <primitive_type.h>
-#endif
+
 
 /*********************************************/     
 #define ETHER_ADDR_LEN 6 //NIC physic address length 6 bytes   
@@ -84,3 +84,4 @@ typedef struct udphdr
     u16 ulen;  	//length of udp header + data length
     u16 checksum;//checksum  	
 }UDP_HEADER;  
+#endif

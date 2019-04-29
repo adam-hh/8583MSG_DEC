@@ -1,7 +1,6 @@
 #include "8583dump.h"
 #include <pthread.h>
-extern void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
-extern void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
+
 void *writeInThread(void *arg)	{
 	loop(0, callbackWriteToBuff, (u8*)arg);
 	return NULL;
@@ -15,7 +14,7 @@ int main()
 	setbuf(stdin, NULL);
 	#ifdef WIN32
 	/* Load Npcap and its functions. */
-	if (!LoadNpcapDlls())
+	if (!LoadNpcapDll())
 	{
 		fprintf(stderr, "Couldn't load Npcap\n");
 		return -1;
@@ -61,7 +60,7 @@ int main()
 		pcap_close(PHandle.handle);
 	*/
 	//loop(0, callbackPrintNextPackage, NULL);	
-	userBuff *usbf;
+	//userBuff *usbf;
 	if((usbf = initUserBuff(10000)) == NULL)
 		printf("initUserBuff(10000) failed.\n");
 	printf("initUserBuff(10000) sucessed.\n");
