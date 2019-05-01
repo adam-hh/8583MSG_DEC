@@ -4,6 +4,8 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItem>
+#include <QtWidgets/QScrollBar>
+#include <QtCOre/QString>
 
 namespace Ui {
     class MainWindow;
@@ -15,10 +17,10 @@ class MainWindow : public QMainWindow{
     public:
         explicit MainWindow();
         ~MainWindow();
-        void setPbt4(bool bl);
-        void setPbt(bool bl);
+        void setPbt4(bool bl); //pushButton_4
+        void setPbt(bool bl); //pushButton
     public slots:
-        void enabltPbt4(bool bl);
+        void enabltPbt4(bool bl); // slot connect to interfaceScaned
         int loop(); //loop
         int appendNewData(QTreeWidgetItem *item); // apend new data
         int expandData(); //expand to treewidget

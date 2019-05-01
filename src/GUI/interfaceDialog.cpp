@@ -124,4 +124,4 @@ void DEC::interfaceDialog::showDevList()
         item->setText(3, devList[it][3]);
         ui->treeWidget->addTopLevelItem(item);
     }
-}}
+}

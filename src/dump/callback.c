@@ -11,14 +11,14 @@
 	const u_char *);
  *user* passed to u_char*, pcap_pkthdr* point to the current pcap_pkthdr, u_char*  point to the data memory first byte address
  */
-int loop(int cnt, pcap_handler callback, u8 *user)
+int loop(int cnt, pcap_handler callback)
 {	
     if((PHandle.handle == NULL) || (PHandle.avaliable == -1))
 		{
 			printf("PHandle is not a live handle.\n");
 			return -1;
 		}
-	return pcap_loop(PHandle.handle, cnt, callback, user);
+	return pcap_loop(PHandle.handle, cnt, callback, (u8*)usbf);
 }
 
 void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data)

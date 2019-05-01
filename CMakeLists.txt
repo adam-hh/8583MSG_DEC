@@ -65,11 +65,11 @@ set(GUIRES
 	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
 )
 # Tell CMake to create the helloworld executable
-add_library(decl STATIC ${decRES})
+#add_library(decl STATIC ${decRES})
 add_library(dumpl STATIC ${dumpRES})
-add_executable(dec ${decRES})
-add_executable(dump ${dumpRES})
+#add_executable(dec ${decRES})
+#add_executable(dump ${dumpRES})
 add_executable(gui WIN32 ${GUIRES})
 
-target_link_libraries(dump ${PRODIR}/Lib/x64/wpcap.lib)
+#target_link_libraries(dump ${PRODIR}/Lib/x64/wpcap.lib)
 target_link_libraries(gui ${PRODIR}/Lib/x64/libdumpl.a ${PRODIR}/Lib/x64/wpcap.lib Qt5::Core Qt5::Widgets)

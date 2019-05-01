@@ -105,7 +105,7 @@ extern int printTCPTraffic(const s8*);
 	const u_char *);
  *user* passed to u_char*, pcap_pkthdr* point to the current pcap_pkthdr, u_char*  point to the data memory first byte address
  */
-extern int loop(int cnt, pcap_handler callback, u8 *user);
+extern int loop(int cnt, pcap_handler callback);
 extern void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
 extern void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data);
 
@@ -127,7 +127,7 @@ typedef struct{
 	u16 portDst;
 	u8 *data;
 	size_t dataLen;
-	u32 synFlag; //a flag for parallel enviorment read/write sync
+	volatile u32 synFlag; //a flag for parallel enviorment read/write sync
 }tcpDataBlock;
 
 //user buff
@@ -166,7 +166,7 @@ extern int readFromUserBuff(userBuff *ub, tcpDataBlock*);
 //release the user buffer
 extern int releaseUserBuff(userBuff *);
 
-#ifdef __cplugsplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -2,7 +2,7 @@
 #include <pthread.h>
 
 void *writeInThread(void *arg)	{
-	loop(0, callbackWriteToBuff, (u8*)arg);
+	loop(0, callbackWriteToBuff);
 	return NULL;
 }
 int main()
@@ -71,7 +71,7 @@ int main()
 	// scanf("%d", &in);
 	// fflush(stdin);
 	pthread_t pt1;
-	if (pthread_create(&pt1, NULL, writeInThread, (void *)usbf)) {
+	if (pthread_create(&pt1, NULL, writeInThread, NULL)) {
 		printf("error creating thread.");
 		abort();
   	}	
