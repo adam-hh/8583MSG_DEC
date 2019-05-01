@@ -281,3 +281,27 @@ int BitMaptest(const int index, const u8 *src, u32 len)
 	free(Mask);	
 	return FAIL;
 }
+u8* testTPDU(const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
+{
+    if(10 != strlen(tpdu))
+        return NULL;
+    u8 *tmp = (u8*)malloc(5);
+    if(!(1 == HexcharStringRevert(tpdu, tmp, 5)))
+        return NULL;
+    u64 l,r;
+    TPDUUnion ul = {0};
+    ul.tpdu = *(TPDU*)tmp;
+    l = ul.val;
+    for(int i = 0; i < (len - 5); i++, src++){
+        TPDUUnion ur = {0};
+        ur.tpdu = *(TPDU*)src;
+        r = ur.val;
+        if(!(l ^ r)){
+            *dstLen = ((*(src - 2) & 0x000000FF) << 8) + ((*(src - 1) & 0x000000FF)); //big edian , little edian
+            if((i + *dstLen - 1) > len)
+                return NULL;
+            return src;
+        }
+    }
+    return NULL;
+}

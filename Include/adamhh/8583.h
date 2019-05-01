@@ -5,6 +5,11 @@ Head file for 8583 project
 #ifndef _8583_
 #define _8583_
 #include "primitive_type.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define OK 1
 #define FAIL 0
 #define FATAL_ERROR -1
@@ -41,6 +46,17 @@ typedef struct{
 	F(61);F(62);F(63);F(64);
 }MsgJL;
 #undef F
+typedef struct{
+    u8 byte0;
+    u8 byte1;
+    u8 byte2;
+    u8 byte3;
+    u8 byte4;
+}TPDU;
+typedef union{
+	u64 val;
+	TPDU tpdu;
+}TPDUUnion;
 
 //Console buffer to send messages to GUI side
 typedef struct{
@@ -56,12 +72,17 @@ extern int printConsole(s8*);
 extern int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst);
 
 //tools
+extern u8* testTPDU(const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);
 extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
 extern void printMem(const u8*, u32);
 extern void printMemS(const u8* src, u32 len, s8* dst);
 extern int BitMaptest(const int, const u8*, u32);
-
 #undef F
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

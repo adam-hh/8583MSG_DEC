@@ -2,7 +2,11 @@
 #include "ui_mainwindow.h"
 #include "interfaceDialog.h"
 #include "8583dump.h"
+#include "8583.h"
+#include "appendThread.h"
 #include <pthread.h>
+#include <QtCore/QDebug>
+#include <QtTest/QTest>
 
 QVector<tcpDataBlock> vec; //store captured data
 pthread_t pthLoop, pthRead; //threads
@@ -62,15 +66,21 @@ DEC::MainWindow::MainWindow() :
     ui->setupUi(this);
     QRegExp regExp("tcp\\sport(\\s[0-9]{1,5})+");
     ui->lineEdit->setValidator(new QRegExpValidator(regExp, this)); //set regexp rule
+    ui->textBrowser->setLineWrapMode(QTextEdit::FixedColumnWidth); //
+    ui->textBrowser->setLineWrapColumnOrWidth(95); // warp each 32 bytes
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
     connect(this, SIGNAL(interfaceScaned(bool)), this, SLOT(enabltPbt4(bool)));
-    //connect(this, SIGNAL(newData(QTreeWidgetItem*)), this, SLOT(appendNewData(QTreeWidgetItem*)));
-    connect(this, SIGNAL(newData(QTreeWidgetItem*)), this, SLOT(appendNewData(QTreeWidgetItem*)), Qt::BlockingQueuedConnection);
+    //QThread qth;
+    //appendThread *aph = new appendThread(this, 1);
+    //aph->moveToThread(&qth);
+    connect(this, SIGNAL(newData(QTreeWidgetItem*)), this, SLOT(appendNewData(QTreeWidgetItem*)), Qt::DirectConnection);
+    //qth.start();
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
-    connect(ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(expandData()), Qt::DirectConnection);
+    connect(ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(expandData()));
+    connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(decodeMsg()));
 }
 
 DEC::MainWindow::~MainWindow()
@@ -100,15 +110,18 @@ void DEC::MainWindow::setPbt(bool bl)
 }
 int DEC::MainWindow::appendNewData(QTreeWidgetItem *item)
 {
+    QMutex mu;
+    mu.lock();
     if(NULL == item){
         ui->treeWidget->clear();
         return 0;
     }
     else{
-        //ui->treeWidget->clear();
         ui->treeWidget->addTopLevelItem(item);
-        ui->treeWidget->scrollToBottom();
+        ui->treeWidget->verticalScrollBar()->setValue(ui->treeWidget->verticalScrollBar()->maximum());
+        //ui->treeWidget->scrollToBottom();  //crashing
     }
+    mu.unlock();
     return 1;
 }
 int DEC::MainWindow::loop()
@@ -139,10 +152,11 @@ int DEC::MainWindow::loop()
 }
 int DEC::MainWindow::expandData()
 {
-    //QMessageBox::information(this, "Title", "expanding Data.");
     int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
-    if(in < vec.size())
-        ui->textBrowser->setPlainText(vec[in].extraInfo);
+    if(in < vec.size()){        
+        QByteArray qB2 = QByteArray::fromRawData((char*)vec[in].data, vec[in].dataLen).toHex(0x20);
+        ui->textBrowser->setPlainText(QString::fromUtf8(qB2).toUpper());
+    }
     return 1;
 }
 int DEC::MainWindow::decode()
@@ -181,5 +195,19 @@ int DEC::MainWindow::restart()
     ui->pushButton_4->setEnabled(false);
     ui->pushButton->setEnabled(false);
     ui->pushButton_2->setEnabled(true);
+    ui->textBrowser->clear();
+    return 1;
+}
+int DEC::MainWindow::decodeMsg()
+{
+    int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
+    if(in < vec.size()){
+        u32 msgLen = 0;
+        if(NULL == testTPDU("6010000001", vec[in].data, vec[in].dataLen, &msgLen)){
+            QMessageBox::information(this, "Title", "TPDU 6010000000 test failed.");
+        }else{
+            QMessageBox::information(this, "Title", "TPDU 6010000000 test passed.");
+        }
+    }
     return 1;
 }

@@ -42,11 +42,12 @@ set(CMAKE_AUTOUIC ON)
 # Find the QtWidgets library
 set(CMAKE_PREFIX_PATH ${QTDIR}/mingw73_64/lib/cmake)
 find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(Qt5Test REQUIRED)
 
 # Populate a CMake variable with the sources
 include_directories(${PRODIR}/Include ${PRODIR}/Include/adamhh)
 set(decRES    
-	${CMAKE_SOURCE_DIR}/dec/8583_main.c
+	${CMAKE_SOURCE_DIR}/dec/test.c
 	${CMAKE_SOURCE_DIR}/dec/tools.c
 	${CMAKE_SOURCE_DIR}/dec/decoder.c
 )
@@ -63,13 +64,14 @@ set(GUIRES
 	${CMAKE_SOURCE_DIR}/GUI/mainWindow.cpp	
 	${CMAKE_SOURCE_DIR}/GUI/interfaceDialog.cpp
 	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
+	${CMAKE_SOURCE_DIR}/GUI/appendThread.cpp
 )
 # Tell CMake to create the helloworld executable
-#add_library(decl STATIC ${decRES})
+add_library(decl STATIC ${decRES})
 add_library(dumpl STATIC ${dumpRES})
-#add_executable(dec ${decRES})
-#add_executable(dump ${dumpRES})
+add_executable(dec ${decRES})
+add_executable(dump ${dumpRES})
 add_executable(gui WIN32 ${GUIRES})
 
-#target_link_libraries(dump ${PRODIR}/Lib/x64/wpcap.lib)
-target_link_libraries(gui ${PRODIR}/Lib/x64/libdumpl.a ${PRODIR}/Lib/x64/wpcap.lib Qt5::Core Qt5::Widgets)
+target_link_libraries(dump ${PRODIR}/Lib/x64/wpcap.lib)
+target_link_libraries(gui ${PRODIR}/Lib/x64/libdumpl.a ${PRODIR}/Lib/x64/libdecl.a ${PRODIR}/Lib/x64/wpcap.lib Qt5::Core Qt5::Widgets Qt5::Test)

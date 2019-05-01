@@ -6,6 +6,8 @@
 #include <QtWidgets/QTreeWidgetItem>
 #include <QtWidgets/QScrollBar>
 #include <QtCOre/QString>
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
 
 namespace Ui {
     class MainWindow;
@@ -27,6 +29,7 @@ class MainWindow : public QMainWindow{
         int decode(); //decode show in textbrowser
         int stop(); //stop loop
         int restart(); //restart loop
+        int decodeMsg(); //decode message
     signals:
         void interfaceScaned(bool bl); //signal to notify when opendev returned without error
         void newData(QTreeWidgetItem *item); //signal to notiry when new data captured
