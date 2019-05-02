@@ -69,7 +69,6 @@ void DEC::interfaceDialog::itemPress()
     if(ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled() == false)
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
-
 int DEC::interfaceDialog::scanDev()
 {
     pcap_if_t *p;

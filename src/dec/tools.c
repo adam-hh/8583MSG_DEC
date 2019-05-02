@@ -297,10 +297,11 @@ u8* testTPDU(const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
         ur.tpdu = *(TPDU*)src;
         r = ur.val;
         if(!(l ^ r)){
-            *dstLen = ((*(src - 2) & 0x000000FF) << 8) + ((*(src - 1) & 0x000000FF)); //big edian , little edian
-            if((i + *dstLen - 1) > len)
+            *dstLen = 2 + ((*(src - 2) & 0x000000FF) << 8) + ((*(src - 1) & 0x000000FF)); //big edian , little edian
+            if((i + *dstLen - 2) > len)
                 return NULL;
-            return src;
+            if(i > 1)
+                return src - 2;
         }
     }
     return NULL;

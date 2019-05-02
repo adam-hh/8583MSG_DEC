@@ -8,6 +8,8 @@
 #include <QtCOre/QString>
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
+#include <QtGui/QBrush>
+#include <QtGui/QColor>
 
 namespace Ui {
     class MainWindow;
@@ -26,10 +28,15 @@ class MainWindow : public QMainWindow{
         int loop(); //loop
         int appendNewData(QTreeWidgetItem *item); // apend new data
         int expandData(); //expand to treewidget
-        int decode(); //decode show in textbrowser
+        int decode(); //never in use
         int stop(); //stop loop
         int restart(); //restart loop
-        int decodeMsg(); //decode message
+        int decodeMsg(); //decode message from capture
+        int decodeMsgManual(); //decode message from manual
+        int testTPDU();//test TPDU
+        int trimTextEdit();//trim(remove space)
+        int alignTextEdit();//align(add space)
+        int clearTextEdit();//clear
     signals:
         void interfaceScaned(bool bl); //signal to notify when opendev returned without error
         void newData(QTreeWidgetItem *item); //signal to notiry when new data captured
@@ -41,6 +48,4 @@ class MainWindow : public QMainWindow{
         DEC::interfaceDialog *itf;
     };
 }
-
-
 #endif // MAINWINDOW_H

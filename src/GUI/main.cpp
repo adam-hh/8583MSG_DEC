@@ -23,6 +23,5 @@ int main(int argc, char *argv[])
     }
     if((usbf = initUserBuff(100000)) == NULL)
         QMessageBox::information(u, "Title", "initUserBuff(100000) failed.");
-		//printf("initUserBuff(10000) failed.\n");
     return app.exec();
 }
