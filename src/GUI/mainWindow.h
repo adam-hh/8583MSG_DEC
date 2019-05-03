@@ -1,6 +1,5 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItem>
@@ -10,7 +9,9 @@
 #include <QtCore/QMutex>
 #include <QtGui/QBrush>
 #include <QtGui/QColor>
-
+#include <QtGui/QStandardItemModel>
+#include <QtWidgets/QTreeView>
+#define MAXSINGLEMSGLEN 10240
 namespace Ui {
     class MainWindow;
 }
@@ -21,10 +22,10 @@ class MainWindow : public QMainWindow{
     public:
         explicit MainWindow();
         ~MainWindow();
+        Ui::MainWindow *ui;
         void setPbt4(bool bl); //pushButton_4
         void setPbt(bool bl); //pushButton
     public slots:
-        void enabltPbt4(bool bl); // slot connect to interfaceScaned
         int loop(); //loop
         int appendNewData(QTreeWidgetItem *item); // apend new data
         int expandData(); //expand to treewidget
@@ -38,13 +39,11 @@ class MainWindow : public QMainWindow{
         int alignTextEdit();//align(add space)
         int clearTextEdit();//clear
     signals:
-        void interfaceScaned(bool bl); //signal to notify when opendev returned without error
         void newData(QTreeWidgetItem *item); //signal to notiry when new data captured
     private slots:
         void findInterface();
 
-    private:
-        Ui::MainWindow *ui;
+    private:        
         DEC::interfaceDialog *itf;
     };
 }

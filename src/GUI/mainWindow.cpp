@@ -73,9 +73,7 @@ DEC::MainWindow::MainWindow() :
     ui->textBrowser->setLineWrapColumnOrWidth(95); // warp each 32 bytes
 
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
-    connect(this, SIGNAL(interfaceScaned(bool)), this, SLOT(enabltPbt4(bool)));
     connect(this, SIGNAL(newData(QTreeWidgetItem*)), this, SLOT(appendNewData(QTreeWidgetItem*)), Qt::DirectConnection);
-
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
@@ -102,15 +100,6 @@ void DEC::MainWindow::findInterface()
     itf->setModal(true);
     itf->show();
     itf->showDevList();
-}
-
-void DEC::MainWindow::enabltPbt4(bool bl)
-{
-    ui->pushButton_4->setEnabled(bl);
-}
-void DEC::MainWindow::setPbt4(bool bl)
-{
-    emit interfaceScaned(bl);
 }
 void DEC::MainWindow::setPbt(bool bl)
 {
@@ -275,9 +264,13 @@ int DEC::MainWindow::decodeMsgManual()
         QMessageBox::information(this, "Title", "TPDU mismatch.");
         return -1;
     }
-    s8 tpdu[100] = {0};
+    if(strlen(ui->textEdit->toPlainText().toLocal8Bit().data()) > MAXSINGLEMSGLEN){
+        QMessageBox::information(this, "Title", "data too long.");
+        return -1;
+    }
+    s8 tpdu[TMPMSGSIZE] = {0};
     strcpy(tpdu, ui->lineEdit_2->text().toLocal8Bit().data());
-    s8 msgInput[1000] = {0};
+    s8 msgInput[MAXSINGLEMSGLEN] = {0};
     strcpy(msgInput, ui->textEdit->toPlainText().toLocal8Bit().data());
     u32 len = strlen(msgInput);
     if(len < 20){
@@ -344,9 +337,13 @@ int DEC::MainWindow::decodeMsgManual()
 }
 int DEC::MainWindow::testTPDU()//test TPDU
 {
+    if(strlen(ui->textEdit->toPlainText().toLocal8Bit().data()) > MAXSINGLEMSGLEN){
+        QMessageBox::information(this, "Title", "data too long.");
+        return -1;
+    }
     s8 tpdu[TMPMSGSIZE] = {0};
     strcpy(tpdu, ui->lineEdit_2->text().toLocal8Bit().data());
-    s8 msgInput[MAXMSGSIZE] = {0};
+    s8 msgInput[MAXSINGLEMSGLEN] = {0};
     strcpy(msgInput, ui->textEdit->toPlainText().toLocal8Bit().data());
     u32 len = strlen(msgInput);
     if(len < 11){
@@ -370,9 +367,13 @@ int DEC::MainWindow::testTPDU()//test TPDU
 }
 int DEC::MainWindow::trimTextEdit()//trim(remove space)
 {
-    s8 msgInput[MAXMSGSIZE] = {0};
+    if(strlen(ui->textEdit->toPlainText().toLocal8Bit().data()) > MAXSINGLEMSGLEN){
+        QMessageBox::information(this, "Title", "data too long.");
+        return -1;
+    }
+    s8 msgInput[MAXSINGLEMSGLEN] = {0};
     strcpy(msgInput, ui->textEdit->toPlainText().toLocal8Bit().data());
-    s8 msgInputNew[MAXMSGSIZE] = {0};
+    s8 msgInputNew[MAXSINGLEMSGLEN] = {0};
     s8 *msgInputNewPtr = msgInputNew;
     for(s8 *tmp = msgInput; *tmp != 0; tmp++){
         if(*tmp == '\t' || *tmp == '\r' || *tmp == '\n' || *tmp == '\v' || *tmp == '\f' || *tmp == 0x20)
@@ -388,9 +389,13 @@ int DEC::MainWindow::trimTextEdit()//trim(remove space)
 }
 int DEC::MainWindow::alignTextEdit()//align(add space)
 {
-    s8 msgInput[MAXMSGSIZE] = {0};
+    if(strlen(ui->textEdit->toPlainText().toLocal8Bit().data()) > MAXSINGLEMSGLEN){
+        QMessageBox::information(this, "Title", "data too long.");
+        return -1;
+    }
+    s8 msgInput[MAXSINGLEMSGLEN] = {0};
     strcpy(msgInput, ui->textEdit->toPlainText().toLocal8Bit().data());
-    s8 msgInputNew[MAXMSGSIZE * 2] = {0};
+    s8 msgInputNew[MAXSINGLEMSGLEN * 2] = {0};
     s8 *msgInputNewPtr = &msgInputNew[0];
     for(s8 *tmp = msgInput; *tmp != 0; tmp++){
         if(*tmp == '\t' || *tmp == '\r' || *tmp == '\n' || *tmp == '\v' || *tmp == '\f' || *tmp == 0x20)
@@ -410,6 +415,8 @@ int DEC::MainWindow::alignTextEdit()//align(add space)
 }
 int DEC::MainWindow::clearTextEdit()//clear
 {
+    // QTreeView *v;
+    // QStandardItemModel *model = new QStandardItemModel(v);
     ui->textEdit->clear();
     return 1;
 }
