@@ -7,10 +7,15 @@
 #include <QtCOre/QString>
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
+#include <QtCore/QStringList>
 #include <QtGui/QBrush>
 #include <QtGui/QColor>
 #include <QtGui/QStandardItemModel>
+#include <QtGui/QStandardItem>
 #include <QtWidgets/QTreeView>
+#include "dataItem.h"
+#include "dataItemModel.h"
+
 #define MAXSINGLEMSGLEN 10240
 namespace Ui {
     class MainWindow;
@@ -23,11 +28,14 @@ class MainWindow : public QMainWindow{
         explicit MainWindow();
         ~MainWindow();
         Ui::MainWindow *ui;
+        dataItemModel *model;
+        DEC::dataItem *modelRoot;
         void setPbt4(bool bl); //pushButton_4
         void setPbt(bool bl); //pushButton
     public slots:
         int loop(); //loop
-        int appendNewData(QTreeWidgetItem *item); // apend new data
+        int appendNewData(DEC::dataItem*); // apend new data
+        int appendNewDatas(QVector<DEC::dataItem*>);
         int expandData(); //expand to treewidget
         int decode(); //never in use
         int stop(); //stop loop
@@ -39,12 +47,19 @@ class MainWindow : public QMainWindow{
         int alignTextEdit();//align(add space)
         int clearTextEdit();//clear
     signals:
-        void newData(QTreeWidgetItem *item); //signal to notiry when new data captured
+        void newData(DEC::dataItem*); //signal to notiry when new data captured
+        void newDatas(QVector<DEC::dataItem*>);
+    protected:
+        void timerEvent(QTimerEvent *event);
+        void showEvent(QShowEvent *event);
+        void hideEvent(QHideEvent *event);
     private slots:
         void findInterface();
 
     private:        
         DEC::interfaceDialog *itf;
+        int myTimeId;
+        volatile int treeViewUpdataFlag;
     };
 }
 #endif // MAINWINDOW_H

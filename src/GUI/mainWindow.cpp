@@ -5,10 +5,9 @@
 #include "8583.h"
 #include "appendThread.h"
 #include <pthread.h>
-#include <QtCore/QDebug>
-#include <QtTest/QTest>
+#include <QtCore/QList>
 
-QVector<tcpDataBlock> vec; //store captured data
+QVector<tcpDataBlock*> vec; //store captured data
 pthread_t pthLoop, pthRead; //threads
 void *threadLoop(void* arg)
 {
@@ -20,42 +19,34 @@ void *threadLoop(void* arg)
 void *threadReadData(void *arg)
 {
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
-    for(QVector<tcpDataBlock>::iterator it = vec.begin(); it != vec.end(); it++){
-        free((*it).data);
+    for(QVector<tcpDataBlock*>::iterator it = vec.begin(); it != vec.end(); it++){
+        free((*it)->data);
     }
-    QVector<tcpDataBlock>().swap(vec); //empty vec
-    emit um->newData(NULL); // empty treeWidget
-    tcpDataBlock b = {0};    
-    int cnt = 0;
+    qDeleteAll(vec);
+    QVector<tcpDataBlock*>().swap(vec); //empty vec
+    emit um->newData(NULL);
+    QModelIndex root = um->model->index(0, 0);
+    //QVector<DEC::dataItem*> itemList;
+    //int cntBegin = 0;
+    int cntEnd = 0;
     int rlt = 0;
     while(true){
-        rlt = readFromUserBuff(usbf, &b);
+        tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
+        rlt = readFromUserBuff(usbf, b);
         if(1 == rlt){
             vec.append(b);
-            QTreeWidgetItem *item = new QTreeWidgetItem();
-            item->setText(0, QString::asprintf("%d", cnt));
-            item->setText(1, b.extraInfo);
-            item->setText(2, QString::asprintf("%d.%d.%d.%d:%d",
-                b.ipSrc.byte1,
-                b.ipSrc.byte2,
-                b.ipSrc.byte3,
-                b.ipSrc.byte4,
-                b.portSrc));
-            item->setText(3, QString::asprintf("%d.%d.%d.%d:%d",
-                b.ipDst.byte1,
-                b.ipDst.byte2,
-                b.ipDst.byte3,
-                b.ipDst.byte4,
-                b.portDst));
-            item->setText(4, "TCP");
-            item->setText(5, b.extraInfo);
-            item->setText(6, b.extraInfo);
-            emit um->newData(item);
-            cnt++;
+            DEC::dataItem* aitem = new DEC::dataItem(um->modelRoot);
+            aitem->setLevel(1);
+            aitem->setPtr((void*)b);
+            //itemList.append(aitem);
+            um->model->beginInsertRowss(root, cntEnd, cntEnd);
+            emit um->newData(aitem);
+            um->model->endInsertRowss();
+            cntEnd++;
         }else{
             Sleep(100);
+            pthread_testcancel();
         }
-        pthread_testcancel();
     }
 }
 
@@ -64,24 +55,38 @@ DEC::MainWindow::MainWindow() :
     itf(new DEC::interfaceDialog(this))
 {
     ui->setupUi(this);
+    myTimeId = 0;
+    treeViewUpdataFlag = 0;
     QRegExp regExpFilter("tcp\\sport(\\s[0-9]{1,5})+");
     ui->lineEdit->setValidator(new QRegExpValidator(regExpFilter, this)); //set Filter rule
     QRegExp regExpTPDU("[0-9]{10}");
     ui->lineEdit_2->setValidator(new QRegExpValidator(regExpTPDU, this)); //set TPDU rule
-
     ui->textBrowser->setLineWrapMode(QTextEdit::FixedColumnWidth); //
     ui->textBrowser->setLineWrapColumnOrWidth(95); // warp each 32 bytes
 
+    QStringList treeviewHeaders;  //QTreeView headers
+    treeviewHeaders << QStringLiteral("No.")
+                    << QStringLiteral("Time")
+                    << QStringLiteral("Source")
+                    << QStringLiteral("Destination")
+                    << QStringLiteral("Protocal")
+                    << QStringLiteral("Length")
+                    << QStringLiteral("Info");
+    model  = new dataItemModel(treeviewHeaders, ui->treeView);
+    modelRoot = model->root();
+    ui->treeView->setModel(model);
+
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
-    connect(this, SIGNAL(newData(QTreeWidgetItem*)), this, SLOT(appendNewData(QTreeWidgetItem*)), Qt::DirectConnection);
+    connect(this, SIGNAL(newData(DEC::dataItem*)), this, SLOT(appendNewData(DEC::dataItem*)), Qt::DirectConnection);
+    connect(this, SIGNAL(newDatas(QList<DEC::dataItem*>)), this, SLOT(appendNewDatas(QList<DEC::dataItem*>)), Qt::DirectConnection);
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
-    connect(ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(expandData()));
+    connect(ui->treeView, SIGNAL(itemSelectionChanged()), this, SLOT(expandData()));
 
-    connect(ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(decodeMsg()));
-    connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(decodeMsg()));
+    connect(ui->treeView, SIGNAL(itemSelectionChanged()), this, SLOT(decodeMsg()));
+    connect(ui->treeView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(decodeMsg()));
     connect(ui->pushButton_9, SIGNAL(clicked()), this, SLOT(decodeMsgManual()));
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(testTPDU()));
     connect(ui->pushButton_6, SIGNAL(clicked()), this, SLOT(trimTextEdit()));
@@ -93,6 +98,7 @@ DEC::MainWindow::~MainWindow()
 {
     delete ui;
     delete itf;
+    delete model;
 }
 
 void DEC::MainWindow::findInterface()
@@ -105,20 +111,24 @@ void DEC::MainWindow::setPbt(bool bl)
 {
     ui->pushButton->setEnabled(bl);
 }
-int DEC::MainWindow::appendNewData(QTreeWidgetItem *item)
+int DEC::MainWindow::appendNewData(DEC::dataItem* items)
 {
-    QMutex mu;
-    mu.lock();
-    if(NULL == item){
-        ui->treeWidget->clear();
+    if(NULL == items){
+        //qDeleteAll(modelRoot->mChildItems); //crashing
+        modelRoot->mChildItems.clear();
+        QList<DEC::dataItem*>().swap(modelRoot->mChildItems);
+        //modelRoot->removeChilds(); //crashing
+        model->resetModel();
+        modelRoot = model->root();
         return 0;
     }
     else{
-        ui->treeWidget->addTopLevelItem(item);
-        ui->treeWidget->verticalScrollBar()->setValue(ui->treeWidget->verticalScrollBar()->maximum());
-        //ui->treeWidget->scrollToBottom();  //crashing
+        modelRoot->appendChild(items);
     }
-    mu.unlock();
+    return 1;
+}
+int DEC::MainWindow::appendNewDatas(QVector<DEC::dataItem*> dataList){
+    modelRoot->appendChilds(dataList);
     return 1;
 }
 int DEC::MainWindow::loop()
@@ -147,11 +157,11 @@ int DEC::MainWindow::loop()
 }
 int DEC::MainWindow::expandData()
 {
-    int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
-    if(in < vec.size()){        
-        QByteArray qB2 = QByteArray::fromRawData((char*)vec[in].data, vec[in].dataLen).toHex(0x20);
-        ui->textBrowser->setPlainText(QString::fromUtf8(qB2).toUpper());
-    }
+    // int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
+    // if(in < vec.size()){        
+    //     QByteArray qB2 = QByteArray::fromRawData((char*)vec[in].data, vec[in].dataLen).toHex(0x20);
+    //     ui->textBrowser->setPlainText(QString::fromUtf8(qB2).toUpper());
+    // }
     return 1;
 }
 int DEC::MainWindow::decode()
@@ -194,7 +204,7 @@ int DEC::MainWindow::restart()
     return 1;
 }
 int DEC::MainWindow::decodeMsg()
-{
+{/*
     ui->textBrowser_2->setPlainText(NULL);
     ui->tableWidget->clearContents();
     int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
@@ -254,7 +264,7 @@ int DEC::MainWindow::decodeMsg()
             return -1;
         }
     }
-    return 1;
+    return 1;*/
 }
 int DEC::MainWindow::decodeMsgManual()
 {
@@ -419,4 +429,20 @@ int DEC::MainWindow::clearTextEdit()//clear
     // QStandardItemModel *model = new QStandardItemModel(v);
     ui->textEdit->clear();
     return 1;
+}
+void DEC::MainWindow::showEvent(QShowEvent *event){
+    myTimeId = startTimer(1000);
+}
+void DEC::MainWindow::hideEvent(QHideEvent *event){
+    killTimer(myTimeId);
+    myTimeId = 0;
+}
+void DEC::MainWindow::timerEvent(QTimerEvent *event){
+    if(event->timerId() == myTimeId  && modelRoot->childCount() != treeViewUpdataFlag){
+        //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
+        treeViewUpdataFlag = modelRoot->childCount();
+        ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
+    }else{
+        QWidget::timerEvent(event);
+    }
 }
