@@ -4,3 +4,4 @@ output/*
 !output/Release/cmakeRelease.bat
 .vscode/*
 CMakeLists.txt
+Lib/x64/*

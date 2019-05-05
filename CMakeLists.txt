@@ -64,7 +64,6 @@ set(GUIRES
 	${CMAKE_SOURCE_DIR}/GUI/mainWindow.cpp	
 	${CMAKE_SOURCE_DIR}/GUI/interfaceDialog.cpp
 	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
-	${CMAKE_SOURCE_DIR}/GUI/appendThread.cpp
 )
 # Tell CMake to create the helloworld executable
 add_library(decl STATIC ${decRES})

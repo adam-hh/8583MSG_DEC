@@ -1,14 +1,17 @@
 #include <pthread.h>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <QtCore/QMetaObject>
 #include "mainWindow.h"
+#include "ui_mainwindow.h"
 #include "interfaceDialog.h"
 #include "8583dump.h"
+#include "pthread.h"
 
 void *threadScan(void *arg){
     DEC::interfaceDialog::scanDev();
-    static_cast<DEC::MainWindow*>(arg)->setPbt4(true);
-    return NULL;
+    DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
+    QMetaObject::invokeMethod(um->ui->pushButton_4, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
 }
 
 int main(int argc, char *argv[])
@@ -23,6 +26,5 @@ int main(int argc, char *argv[])
     }
     if((usbf = initUserBuff(100000)) == NULL)
         QMessageBox::information(u, "Title", "initUserBuff(100000) failed.");
-		//printf("initUserBuff(10000) failed.\n");
     return app.exec();
 }

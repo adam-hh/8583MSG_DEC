@@ -139,7 +139,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeWidget" name="treeWidget2">
+           <widget class="QTextBrowser" name="textBrowser_2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -152,17 +152,9 @@
               <height>120</height>
              </size>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>120</height>
-             </size>
+            <property name="acceptRichText">
+             <bool>false</bool>
             </property>
-            <column>
-             <property name="text">
-              <string notr="true"/>
-             </property>
-            </column>
            </widget>
           </item>
           <item>
@@ -252,6 +244,9 @@
               <height>400</height>
              </size>
             </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::DoubleClicked</set>
+            </property>
             <property name="showGrid">
              <bool>true</bool>
             </property>
@@ -262,13 +257,22 @@
              <number>68</number>
             </property>
             <property name="columnCount">
-             <number>3</number>
+             <number>2</number>
             </property>
             <attribute name="horizontalHeaderVisible">
              <bool>true</bool>
             </attribute>
-            <attribute name="verticalHeaderVisible">
+            <attribute name="horizontalHeaderCascadingSectionResizes">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
              <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>true</bool>
             </attribute>
             <row/>
             <row/>
@@ -348,11 +352,6 @@
               <string>值</string>
              </property>
             </column>
-            <column>
-             <property name="text">
-              <string>注释</string>
-             </property>
-            </column>
            </widget>
           </item>
           <item>
@@ -374,6 +373,18 @@
               <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="lineWrapMode">
+             <enum>QTextEdit::FixedColumnWidth</enum>
+            </property>
+            <property name="lineWrapColumnOrWidth">
+             <number>47</number>
+            </property>
+            <property name="acceptRichText">
+             <bool>false</bool>
+            </property>
+            <property name="placeholderText">
+             <string>手输报文</string>
             </property>
            </widget>
           </item>
@@ -408,7 +419,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_2"/>
+             <widget class="QLineEdit" name="lineEdit_2">
+              <property name="placeholderText">
+               <string>[0-9]{10}</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_9">
