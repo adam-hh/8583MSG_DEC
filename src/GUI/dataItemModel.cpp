@@ -95,14 +95,14 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     int pos = -1;
     newRows << record;
     if(newRows.count() < 2){
-        QTimer::singleShot(10, this, SLOT(flushVisibleRows()));
+        QTimer::singleShot(0, this, SLOT(flushVisibleRows()));
     }
     pos = allRows.count() + newRows.count() - 1;
     return pos;
 }
 void DEC::dataItemModel::flushVisibleRows(){
     int pos = allRows.count();
-    if(newRows.count() > 0){
+    if(newRows.count() > 0 && newRows.count() < 100){
         beginInsertRows(QModelIndex(), pos, pos + newRows.count());
         foreach(DEC::dataItem *record, newRows){
             record->setRow(pos++);

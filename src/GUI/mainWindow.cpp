@@ -3,7 +3,7 @@
 #include "interfaceDialog.h"
 #include "8583dump.h"
 #include "8583.h"
-#include "appendThread.h"
+#include "ThreadTreeView.h"
 #include <pthread.h>
 #include <QtCore/QList>
 
@@ -44,6 +44,7 @@ DEC::MainWindow::MainWindow() :
     itf(new DEC::interfaceDialog(this))
 {
     ui->setupUi(this);
+    ui->treeView->setUniformRowHeights(true);
     myTimeId = 0;
     treeViewUpdataFlag = 0;
     QRegExp regExpFilter("tcp\\sport(\\s[0-9]{1,5})+");
@@ -62,7 +63,7 @@ DEC::MainWindow::MainWindow() :
                     << QStringLiteral("Length")
                     << QStringLiteral("Info");
     model  = new dataItemModel(treeviewHeaders);
-    ui->treeView->setModel(model);
+    ui->treeView->setModel(model);    
 
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
     connect(this, SIGNAL(newData(DEC::dataItem*)), this, SLOT(appendNewData(DEC::dataItem*)), Qt::DirectConnection);
@@ -132,11 +133,15 @@ int DEC::MainWindow::loop()
     if (pthread_create(&pthLoop, NULL, threadLoop, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
-    }
+    }/*
     if (pthread_create(&pthRead, NULL, threadReadData, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
-    }
+    }*/
+    ThreadTreeView *t1 = new ThreadTreeView(model);
+    t1->moveToThread(&T1);
+    T1.start();
+    connect(&T1, SIGNAL(started()), t1, SLOT(startCapture()));
     ui->pushButton->setEnabled(false);
     ui->pushButton_4->setEnabled(false);
     ui->pushButton_2->setEnabled(true);
@@ -428,8 +433,8 @@ void DEC::MainWindow::hideEvent(QHideEvent *event){
 void DEC::MainWindow::timerEvent(QTimerEvent *event){
     if(event->timerId() == myTimeId  && model->rowCount() != treeViewUpdataFlag){
         //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
-        treeViewUpdataFlag = model->rowCount();
-        ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
+        //treeViewUpdataFlag = model->rowCount();
+        //ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
     }else{
         QWidget::timerEvent(event);
     }

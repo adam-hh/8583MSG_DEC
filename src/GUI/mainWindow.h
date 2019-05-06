@@ -59,6 +59,7 @@ class MainWindow : public QMainWindow{
         DEC::interfaceDialog *itf;
         int myTimeId;
         volatile int treeViewUpdataFlag;
+        QThread T1;
     };
 }
 #endif // MAINWINDOW_H

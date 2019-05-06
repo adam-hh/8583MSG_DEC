@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(8583MSG_DEC C CXX)
-set(PRODIR "F:\\DevProjects\\8583MSG_DEC")
-set(QTDIR "C:\\Qt\\Qt5.12.2")
+set(PRODIR "E:\\DevProjects\\8583MSG_DEC")
+set(QTDIR "E:\\Qt\\Qt5.12.2")
 set(CYGWINDIR "D:\\cygwin64")
 set(CMAKE_SOURCE_DIR  "src")
 set(CMAKE_BINARY_DIR  "output")
@@ -66,6 +66,7 @@ set(GUIRES
 	${CMAKE_SOURCE_DIR}/GUI/icons.cpp
 	${CMAKE_SOURCE_DIR}/GUI/dataItem.cpp
 	${CMAKE_SOURCE_DIR}/GUI/dataItemModel.cpp
+	${CMAKE_SOURCE_DIR}/GUI/ThreadTreeView.h
 )
 # Tell CMake to create the helloworld executable
 add_library(decl STATIC ${decRES})
