@@ -24,25 +24,14 @@ void *threadReadData(void *arg)
     }
     qDeleteAll(vec);
     QVector<tcpDataBlock*>().swap(vec); //empty vec
-    emit um->newData(NULL);
-    QModelIndex root = um->model->index(0, 0);
-    //QVector<DEC::dataItem*> itemList;
-    //int cntBegin = 0;
-    int cntEnd = 0;
     int rlt = 0;
+    um->model->resetModel();
     while(true){
         tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
         rlt = readFromUserBuff(usbf, b);
         if(1 == rlt){
             vec.append(b);
-            DEC::dataItem* aitem = new DEC::dataItem(um->modelRoot);
-            aitem->setLevel(1);
-            aitem->setPtr((void*)b);
-            //itemList.append(aitem);
-            um->model->beginInsertRowss(root, cntEnd, cntEnd);
-            emit um->newData(aitem);
-            um->model->endInsertRowss();
-            cntEnd++;
+            um->model->appendItem(b);
         }else{
             Sleep(100);
             pthread_testcancel();
@@ -72,8 +61,7 @@ DEC::MainWindow::MainWindow() :
                     << QStringLiteral("Protocal")
                     << QStringLiteral("Length")
                     << QStringLiteral("Info");
-    model  = new dataItemModel(treeviewHeaders, ui->treeView);
-    modelRoot = model->root();
+    model  = new dataItemModel(treeviewHeaders);
     ui->treeView->setModel(model);
 
     connect(ui->pushButton_4, SIGNAL(clicked()), this, SLOT(findInterface()));
@@ -115,20 +103,20 @@ int DEC::MainWindow::appendNewData(DEC::dataItem* items)
 {
     if(NULL == items){
         //qDeleteAll(modelRoot->mChildItems); //crashing
-        modelRoot->mChildItems.clear();
-        QList<DEC::dataItem*>().swap(modelRoot->mChildItems);
+        //modelRoot->mChildItems.clear();
+        //QList<DEC::dataItem*>().swap(modelRoot->mChildItems);
         //modelRoot->removeChilds(); //crashing
         model->resetModel();
-        modelRoot = model->root();
+        //modelRoot = model->root();
         return 0;
     }
     else{
-        modelRoot->appendChild(items);
+        //modelRoot->appendChild(items);
     }
     return 1;
 }
 int DEC::MainWindow::appendNewDatas(QVector<DEC::dataItem*> dataList){
-    modelRoot->appendChilds(dataList);
+    //modelRoot->appendChilds(dataList);
     return 1;
 }
 int DEC::MainWindow::loop()
@@ -438,9 +426,9 @@ void DEC::MainWindow::hideEvent(QHideEvent *event){
     myTimeId = 0;
 }
 void DEC::MainWindow::timerEvent(QTimerEvent *event){
-    if(event->timerId() == myTimeId  && modelRoot->childCount() != treeViewUpdataFlag){
+    if(event->timerId() == myTimeId  && model->rowCount() != treeViewUpdataFlag){
         //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
-        treeViewUpdataFlag = modelRoot->childCount();
+        treeViewUpdataFlag = model->rowCount();
         ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
     }else{
         QWidget::timerEvent(event);

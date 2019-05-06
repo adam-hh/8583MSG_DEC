@@ -4,6 +4,7 @@
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QModelIndex>
 #include <QtCore/QVariant>
+#include <QtCore/QTimer>
 #include "8583dump.h"
 
 namespace DEC{
@@ -31,17 +32,16 @@ public:
     QModelIndex parent(const QModelIndex &index) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    //bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    void beginInsertRowss(const QModelIndex &parent, int first, int last);
-    void endInsertRowss();
-    void resetModel();
-public:
     DEC::dataItem *itemFromIndex(const QModelIndex &index) const;
-    DEC::dataItem *root();
+    void resetModel();
+    int appendItem(tcpDataBlock* item);
+public slots:
+    void flushVisibleRows();
 private:
     QStringList mHeaders;
-    DEC::dataItem *mRootItem;
-
+    int columnNumCnt;
+    QVector<DEC::dataItem*> allRows;
+    QVector<DEC::dataItem*> newRows;
 };
 }
 #endif

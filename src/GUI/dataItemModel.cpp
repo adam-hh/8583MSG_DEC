@@ -5,12 +5,12 @@
 #include <QtCore/QStringList>
 
 DEC::dataItemModel::dataItemModel(QStringList headers, QObject *parent)
-    : QAbstractItemModel(parent){
-        mHeaders = headers;
-        mRootItem = new dataItem;
+    : QAbstractItemModel(parent), mHeaders(headers){
+        columnNumCnt = 7;
 }
 DEC::dataItemModel::~dataItemModel(){
-    delete mRootItem;
+    //qDeleteAll(newRows);
+    //qDeleteAll(allRows);
 }
 DEC::dataItem *DEC::dataItemModel::itemFromIndex(const QModelIndex &index) const{
     if(!index.isValid())
@@ -18,10 +18,6 @@ DEC::dataItem *DEC::dataItemModel::itemFromIndex(const QModelIndex &index) const
     dataItem *item = static_cast<dataItem*>(index.internalPointer());
     return item;
 }
-DEC::dataItem *DEC::dataItemModel::root(){
-    return mRootItem;
-}
-
 QVariant DEC::dataItemModel::headerData(int section, Qt::Orientation orientation, int role) const{
     if(orientation == Qt::Horizontal){
         if(role == Qt::DisplayRole){
@@ -35,7 +31,29 @@ QVariant DEC::dataItemModel::data(const QModelIndex &index, int role) const{
         return QVariant();
     dataItem *item = static_cast<dataItem*>(index.internalPointer());
     if(role == Qt::DisplayRole){
-        return item->data(index.column());
+        switch(index.column()){
+            case 0: return QString::number(item->getRow());
+            case 1: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
+            case 2: return QString::asprintf("%d.%d.%d.%d:%d",
+                                item->tcpData()->ipSrc.byte1,
+                                item->tcpData()->ipSrc.byte2,
+                                item->tcpData()->ipSrc.byte3,
+                                item->tcpData()->ipSrc.byte4,
+                                item->tcpData()->portSrc
+                            );
+            case 3: return QString::asprintf("%d.%d.%d.%d:%d",
+                                item->tcpData()->ipDst.byte1,
+                                item->tcpData()->ipDst.byte2,
+                                item->tcpData()->ipDst.byte3,
+                                item->tcpData()->ipDst.byte4,
+                                item->tcpData()->portDst
+                            );
+            case 4: return "TCP";
+            case 5: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
+            case 6: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
+            default:
+                    return QVariant();
+        }
     }
     return QVariant();
 }
@@ -46,51 +64,51 @@ Qt::ItemFlags DEC::dataItemModel::flags(const QModelIndex &index) const{
     return QAbstractItemModel::flags(index);
 }
 QModelIndex DEC::dataItemModel::index(int row, int column, const QModelIndex &parent) const{
-    if(!hasIndex(row, column, parent))
+    if(row >= allRows.count() || row < 0 || column >= columnNumCnt || column < 0)
         return QModelIndex();
-    dataItem *parentItem;
-    if(!parent.isValid())
-        parentItem = mRootItem;
-    else
-        parentItem = static_cast<dataItem*>(parent.internalPointer());
-    
-    dataItem *childItem = parentItem->child(row);
-    if(childItem)
-        return createIndex(row, column, childItem);
-    else
-        return QModelIndex();
+    DEC::dataItem *record = allRows[row];
+    return createIndex(row, column, record);
 }
 QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
-    if(!index.isValid())
-        return QModelIndex();
-    dataItem *childItem = static_cast<dataItem*>(index.internalPointer());
-    dataItem *parentItem = childItem->parentItem();
-
-    if(parentItem == mRootItem)
-        return QModelIndex();
-    return createIndex(parentItem->row(), 0, parentItem);
+    return QModelIndex();
 }
 int DEC::dataItemModel::rowCount(const QModelIndex &parent) const {
-    dataItem *parentItem;
-    if(parent.column() > 0)
+    if(parent.column() >= columnNumCnt)
         return 0;
-    
-    if(!parent.isValid())
-        parentItem = mRootItem;
-    else
-        parentItem = static_cast<dataItem*>(parent.internalPointer());
-    return parentItem->childCount();
+    return allRows.count();
 }
 int DEC::dataItemModel::columnCount(const QModelIndex &parent) const{
-    return mHeaders.size();
+    return columnNumCnt;
 }
-void DEC::dataItemModel::beginInsertRowss(const QModelIndex &parent, int first, int last){
-    beginInsertRows(parent, first, last);
-}
-void DEC::dataItemModel::endInsertRowss(){
-    endInsertRows();
-}
+
 void DEC::dataItemModel::resetModel(){
-    mRootItem = new dataItem;
+    qDeleteAll(allRows);
+    allRows.clear();
+    allRows.squeeze();
+    qDeleteAll(newRows);
+    newRows.clear();
+    newRows.squeeze();
     endResetModel();
+}
+int DEC::dataItemModel::appendItem(tcpDataBlock* item){
+    DEC::dataItem *record = new DEC::dataItem(item);
+    int pos = -1;
+    newRows << record;
+    if(newRows.count() < 2){
+        QTimer::singleShot(10, this, SLOT(flushVisibleRows()));
+    }
+    pos = allRows.count() + newRows.count() - 1;
+    return pos;
+}
+void DEC::dataItemModel::flushVisibleRows(){
+    int pos = allRows.count();
+    if(newRows.count() > 0){
+        beginInsertRows(QModelIndex(), pos, pos + newRows.count());
+        foreach(DEC::dataItem *record, newRows){
+            record->setRow(pos++);
+            allRows << record;
+        }
+        endInsertRows();
+        newRows.resize(0);
+    }
 }

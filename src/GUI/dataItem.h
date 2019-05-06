@@ -3,38 +3,25 @@
 #include <QtCore/QVariant>
 #include <QtCore/QVector>
 #include <QtCore/QList>
+#include "8583.h"
+#include "8583dump.h"
 namespace DEC
 {
 class dataItem{
 public:
-    explicit dataItem(dataItem *parentItem = nullptr);
+    explicit dataItem(tcpDataBlock* data = nullptr);
     ~dataItem();
-    void appendChild(dataItem *child);
-    void appendChilds(QVector<DEC::dataItem*> childs);
-    void removeChilds();
 
-    dataItem *child(int row);
-    dataItem *parentItem();
-    int childCount() const;
-    int row() const;
-
-    QVariant data(int column) const;
-
-    int level(){return mLevel;}
-    void setLevel(int level){mLevel = level;}
-
-    void setPtr(void* p) { mPtr = p;}
-    void* ptr(){return mPtr;}
-
+    tcpDataBlock* tcpData(){return fdata;}
     void setRow(int row){
-        mRow = row;
+        rowNum = row;
     }
-    QList<dataItem*> mChildItems;
+    int getRow(){
+        return rowNum;
+    }
 private:
-    dataItem *mParentItem;
-    int mLevel;
-    void* mPtr;
-    int mRow;
+    tcpDataBlock* fdata;
+    int rowNum;
 };
 
 } // namespace DEC

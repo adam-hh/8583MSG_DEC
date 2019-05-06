@@ -29,7 +29,6 @@ class MainWindow : public QMainWindow{
         ~MainWindow();
         Ui::MainWindow *ui;
         dataItemModel *model;
-        DEC::dataItem *modelRoot;
         void setPbt4(bool bl); //pushButton_4
         void setPbt(bool bl); //pushButton
     public slots:

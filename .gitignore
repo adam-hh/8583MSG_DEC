@@ -3,4 +3,5 @@ output/*
 !output/Debug/cmakeDebug.bat
 !output/Release/cmakeRelease.bat
 .vscode/*
-Lib/x64/*
+Lib/x64/libdecl.a
+Lib/x64/libdumpl.a
