@@ -28,7 +28,8 @@ public slots:
             rlt = readFromUserBuff(usbf, b);
             if(1 == rlt){
                 vec.append(b);
-                model->appendItem(b);
+                if(model->appendItem(b) != model->rowCount())
+                    Sleep(100);
                 //Sleep(10);
             }else{
                 Sleep(100);

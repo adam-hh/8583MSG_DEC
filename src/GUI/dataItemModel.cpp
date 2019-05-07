@@ -64,9 +64,13 @@ Qt::ItemFlags DEC::dataItemModel::flags(const QModelIndex &index) const{
     return QAbstractItemModel::flags(index);
 }
 QModelIndex DEC::dataItemModel::index(int row, int column, const QModelIndex &parent) const{
-    if(row >= allRows.count() || row < 0 || column >= columnNumCnt || column < 0)
+    if(row >= rowCount(QModelIndex()) || row < 0 || column >= columnNumCnt || column < 0)
         return QModelIndex();
-    DEC::dataItem *record = allRows[row];
+    DEC::dataItem *record;
+    QMutexLocker(&DEC::mutex);
+    {
+        record = allRows.at(row);
+    }    
     return createIndex(row, column, record);
 }
 QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
@@ -75,13 +79,19 @@ QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
 int DEC::dataItemModel::rowCount(const QModelIndex &parent) const {
     if(parent.column() >= columnNumCnt)
         return 0;
-    return allRows.count();
+    int cnt = 0;
+    QMutexLocker(&DEC::mutex);
+    {
+        cnt = allRows.count();
+    }
+    return cnt;
 }
 int DEC::dataItemModel::columnCount(const QModelIndex &parent) const{
     return columnNumCnt;
 }
 
 void DEC::dataItemModel::resetModel(){
+    beginResetModel();
     qDeleteAll(allRows);
     allRows.clear();
     allRows.squeeze();
@@ -92,17 +102,25 @@ void DEC::dataItemModel::resetModel(){
 }
 int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     DEC::dataItem *record = new DEC::dataItem(item);
-    int pos = -1;
+    /*int pos = -1;
     newRows << record;
     if(newRows.count() < 2){
         QTimer::singleShot(0, this, SLOT(flushVisibleRows()));
-    }
-    pos = allRows.count() + newRows.count() - 1;
+    }*/
+    //pos = allRows.count() + newRows.count() - 1;
+    int pos = allRows.count();
+    beginInsertRows(QModelIndex(), pos, pos);
+    record->setRow(pos);
+    QMutexLocker(&DEC::mutex);
+    {
+        allRows << record;
+    }    
+    endInsertRows();
     return pos;
 }
 void DEC::dataItemModel::flushVisibleRows(){
     int pos = allRows.count();
-    if(newRows.count() > 0 && newRows.count() < 100){
+    if(newRows.count() > 0){
         beginInsertRows(QModelIndex(), pos, pos + newRows.count());
         foreach(DEC::dataItem *record, newRows){
             record->setRow(pos++);
@@ -112,3 +130,5 @@ void DEC::dataItemModel::flushVisibleRows(){
         newRows.resize(0);
     }
 }
+QVector<DEC::dataItem*> DEC::dataItemModel::allRows = QVector<DEC::dataItem*>();
+QVector<DEC::dataItem*> DEC::dataItemModel::newRows = QVector<DEC::dataItem*>();

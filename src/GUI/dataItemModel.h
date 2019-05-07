@@ -5,9 +5,12 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QVariant>
 #include <QtCore/QTimer>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
 #include "8583dump.h"
 
 namespace DEC{
+extern QMutex mutex;
 class dataItemModel : public QAbstractItemModel{
     Q_OBJECT
 public:
@@ -40,8 +43,8 @@ public slots:
 private:
     QStringList mHeaders;
     int columnNumCnt;
-    QVector<DEC::dataItem*> allRows;
-    QVector<DEC::dataItem*> newRows;
+    static QVector<DEC::dataItem*> allRows;
+    static QVector<DEC::dataItem*> newRows;
 };
 }
 #endif

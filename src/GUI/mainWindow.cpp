@@ -21,30 +21,34 @@ void *threadReadData(void *arg)
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
     for(QVector<tcpDataBlock*>::iterator it = vec.begin(); it != vec.end(); it++){
         free((*it)->data);
+        free(*it);
     }
-    qDeleteAll(vec);
+    //qDeleteAll(vec);
     QVector<tcpDataBlock*>().swap(vec); //empty vec
     int rlt = 0;
+    int pos = -1;
     um->model->resetModel();
     while(true){
         tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
         rlt = readFromUserBuff(usbf, b);
         if(1 == rlt){
             vec.append(b);
-            um->model->appendItem(b);
-        }else{
-            Sleep(100);
-            pthread_testcancel();
+            pos = um->model->appendItem(b);
+        }else{/*
+            if(pos == um->model->rowCount())
+                continue;*/
+            Sleep(1000);
         }
+        pthread_testcancel();
     }
 }
-
+QMutex DEC::mutex;
 DEC::MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
     itf(new DEC::interfaceDialog(this))
 {
     ui->setupUi(this);
-    ui->treeView->setUniformRowHeights(true);
+    //ui->treeView->setUniformRowHeights(true);
     myTimeId = 0;
     treeViewUpdataFlag = 0;
     QRegExp regExpFilter("tcp\\sport(\\s[0-9]{1,5})+");
@@ -133,15 +137,17 @@ int DEC::MainWindow::loop()
     if (pthread_create(&pthLoop, NULL, threadLoop, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
-    }/*
+    }
     if (pthread_create(&pthRead, NULL, threadReadData, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
-    }*/
+    }
+    /*
     ThreadTreeView *t1 = new ThreadTreeView(model);
     t1->moveToThread(&T1);
     T1.start();
     connect(&T1, SIGNAL(started()), t1, SLOT(startCapture()));
+    */
     ui->pushButton->setEnabled(false);
     ui->pushButton_4->setEnabled(false);
     ui->pushButton_2->setEnabled(true);
@@ -433,8 +439,8 @@ void DEC::MainWindow::hideEvent(QHideEvent *event){
 void DEC::MainWindow::timerEvent(QTimerEvent *event){
     if(event->timerId() == myTimeId  && model->rowCount() != treeViewUpdataFlag){
         //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
-        //treeViewUpdataFlag = model->rowCount();
-        //ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
+        treeViewUpdataFlag = model->rowCount();
+        ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
     }else{
         QWidget::timerEvent(event);
     }

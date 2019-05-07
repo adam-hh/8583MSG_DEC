@@ -13,6 +13,8 @@
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QStandardItem>
 #include <QtWidgets/QTreeView>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
 #include "dataItem.h"
 #include "dataItemModel.h"
 
@@ -21,6 +23,7 @@ namespace Ui {
     class MainWindow;
 }
 namespace DEC {
+extern QMutex mutex;
 class interfaceDialog;
 class MainWindow : public QMainWindow{
     Q_OBJECT
