@@ -18,8 +18,8 @@ class interfaceDialog : public QDialog{
     public:
         interfaceDialog(QWidget *parent = nullptr);
         ~interfaceDialog();
-        //static QVector<QVector<QString>> devList;
-        //static pcap_if_t *alldevs;
+        static QVector<QVector<QString>> devList;
+        static pcap_if_t *alldevs;
         static int scanDev();
         void showDevList();
     private slots:

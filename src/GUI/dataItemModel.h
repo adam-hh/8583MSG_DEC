@@ -7,6 +7,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
+#include <QtCore/QDebug>
 #include "8583dump.h"
 
 namespace DEC{

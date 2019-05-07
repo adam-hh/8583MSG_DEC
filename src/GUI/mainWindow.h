@@ -19,6 +19,7 @@
 #include "dataItemModel.h"
 
 #define MAXSINGLEMSGLEN 10240
+extern QVector<tcpDataBlock*> vec; //store captured data
 namespace Ui {
     class MainWindow;
 }
@@ -36,9 +37,7 @@ class MainWindow : public QMainWindow{
         void setPbt(bool bl); //pushButton
     public slots:
         int loop(); //loop
-        int appendNewData(DEC::dataItem*); // apend new data
-        int appendNewDatas(QVector<DEC::dataItem*>);
-        int expandData(); //expand to treewidget
+        int expandData(QModelIndex&); //expand to treewidget
         int decode(); //never in use
         int stop(); //stop loop
         int restart(); //restart loop
@@ -48,13 +47,10 @@ class MainWindow : public QMainWindow{
         int trimTextEdit();//trim(remove space)
         int alignTextEdit();//align(add space)
         int clearTextEdit();//clear
-    signals:
-        void newData(DEC::dataItem*); //signal to notiry when new data captured
-        void newDatas(QVector<DEC::dataItem*>);
     protected:
         void timerEvent(QTimerEvent *event);
         void showEvent(QShowEvent *event);
-        void hideEvent(QHideEvent *event);
+        //void hideEvent(QHideEvent *event);
     private slots:
         void findInterface();
 

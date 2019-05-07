@@ -67,10 +67,7 @@ QModelIndex DEC::dataItemModel::index(int row, int column, const QModelIndex &pa
     if(row >= rowCount(QModelIndex()) || row < 0 || column >= columnNumCnt || column < 0)
         return QModelIndex();
     DEC::dataItem *record;
-    QMutexLocker(&DEC::mutex);
-    {
-        record = allRows.at(row);
-    }    
+    record = allRows.at(row);
     return createIndex(row, column, record);
 }
 QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
@@ -93,42 +90,41 @@ int DEC::dataItemModel::columnCount(const QModelIndex &parent) const{
 void DEC::dataItemModel::resetModel(){
     beginResetModel();
     qDeleteAll(allRows);
-    allRows.clear();
-    allRows.squeeze();
+    allRows.resize(0);
     qDeleteAll(newRows);
-    newRows.clear();
-    newRows.squeeze();
+    newRows.resize(0);
     endResetModel();
 }
 int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     DEC::dataItem *record = new DEC::dataItem(item);
-    /*int pos = -1;
-    newRows << record;
+    int pos = -1;
+    mutex.lock();
+    {
+        newRows << record;
+    }
+    mutex.unlock();
     if(newRows.count() < 2){
         QTimer::singleShot(0, this, SLOT(flushVisibleRows()));
-    }*/
-    //pos = allRows.count() + newRows.count() - 1;
-    int pos = allRows.count();
-    beginInsertRows(QModelIndex(), pos, pos);
-    record->setRow(pos);
-    QMutexLocker(&DEC::mutex);
-    {
-        allRows << record;
-    }    
-    endInsertRows();
+    }
+    pos = allRows.count() + newRows.count() - 1;
     return pos;
 }
 void DEC::dataItemModel::flushVisibleRows(){
     int pos = allRows.count();
     if(newRows.count() > 0){
         beginInsertRows(QModelIndex(), pos, pos + newRows.count());
-        foreach(DEC::dataItem *record, newRows){
-            record->setRow(pos++);
-            allRows << record;
+        if(mutex.tryLock()){
+            foreach(DEC::dataItem *record, newRows){
+                record->setRow(pos++);
+                allRows << record;
+            }
+            newRows.resize(0);
+            mutex.unlock();
+        }else{
+            qDebug() << "error flushVisibleRows";
         }
         endInsertRows();
-        newRows.resize(0);
     }
 }
-QVector<DEC::dataItem*> DEC::dataItemModel::allRows = QVector<DEC::dataItem*>();
-QVector<DEC::dataItem*> DEC::dataItemModel::newRows = QVector<DEC::dataItem*>();
+QVector<DEC::dataItem*> DEC::dataItemModel::allRows = QVector<DEC::dataItem*>(1000000);
+QVector<DEC::dataItem*> DEC::dataItemModel::newRows = QVector<DEC::dataItem*>(10000);

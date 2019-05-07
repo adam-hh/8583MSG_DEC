@@ -5,8 +5,8 @@
 #include "ui_interfaceDialog.h"
 #include "mainWindow.h"
 #include "8583dump.h"
-pcap_if_t *alldevs = NULL;
-QVector<QVector<QString>> devList = {};
+pcap_if_t *DEC::interfaceDialog::alldevs = NULL;
+QVector<QVector<QString>> DEC::interfaceDialog::devList = {};
 DEC::interfaceDialog::interfaceDialog(QWidget *parent) : 
     QDialog(parent),
     ui(new Ui::interfaceDialog)
@@ -115,12 +115,12 @@ int DEC::interfaceDialog::scanDev()
 void DEC::interfaceDialog::showDevList()
 {
     ui->treeWidget->clear();
-    for(int it = 0; it < devList.count(); it++){
+    foreach(QVector<QString> vec, devList){
         QTreeWidgetItem *item = new QTreeWidgetItem();
-        item->setText(0, devList[it][0]);
-        item->setText(1, devList[it][1]);
-        item->setText(2, devList[it][2]);
-        item->setText(3, devList[it][3]);
+        item->setText(0, vec[0]);
+        item->setText(1, vec[1]);
+        item->setText(2, vec[2]);
+        item->setText(3, vec[3]);
         ui->treeWidget->addTopLevelItem(item);
     }
 }
