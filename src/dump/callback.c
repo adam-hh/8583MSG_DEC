@@ -54,7 +54,10 @@ void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *
 	ltime=localtime(&local_tv_sec);
 	strftime( timestr, sizeof timestr, "%H:%M:%S", ltime);
 	/* print pkt timestamp and pkt len */
-	sprintf(tb.extraInfo, "%s,%.6ld len:%d", timestr, header->ts.tv_usec, header->len);
+	//sprintf(tb.extraInfo, "%s,%.6ld len:%d", timestr, header->ts.tv_usec, header->len);
+	sprintf(tb.timestr, "%s", timestr);
+	tb.tv_usec = header->ts.tv_usec;
+	tb.totallen = header->len;
 
 	
 	IP_HEADER *ih;

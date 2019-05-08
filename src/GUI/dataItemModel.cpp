@@ -33,7 +33,7 @@ QVariant DEC::dataItemModel::data(const QModelIndex &index, int role) const{
     if(role == Qt::DisplayRole){
         switch(index.column()){
             case 0: return QString::number(item->getRow());
-            case 1: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
+            case 1: return QString::fromLocal8Bit(item->tcpData()->timestr);
             case 2: return QString::asprintf("%d.%d.%d.%d:%d",
                                 item->tcpData()->ipSrc.byte1,
                                 item->tcpData()->ipSrc.byte2,
@@ -49,8 +49,8 @@ QVariant DEC::dataItemModel::data(const QModelIndex &index, int role) const{
                                 item->tcpData()->portDst
                             );
             case 4: return "TCP";
-            case 5: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
-            case 6: return QString::fromLocal8Bit(item->tcpData()->extraInfo);
+            case 5: return QString::number(item->tcpData()->totallen);
+            case 6: return QString::number(item->tcpData()->tv_usec);
             default:
                     return QVariant();
         }

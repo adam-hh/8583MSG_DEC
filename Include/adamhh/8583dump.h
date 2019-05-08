@@ -34,6 +34,7 @@ extern "C" {
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 #define EXTRAINFOSIZE 30
+#define TIMESTRSIZE 17
 
 
 //a global pcap_t handle, for the whole life cycle of this program.
@@ -120,7 +121,10 @@ typedef struct{
 
 //tcp data block
 typedef struct{
-	s8 extraInfo[EXTRAINFOSIZE];
+	//s8 extraInfo[EXTRAINFOSIZE];
+	s8 timestr[TIMESTRSIZE]; //time string, 16 bytes with extra \0
+	s64 tv_usec; // details time stamp
+	s32 totallen; //total package length
 	ip_address ipSrc;
 	ip_address ipDst;
 	u16 portSrc;

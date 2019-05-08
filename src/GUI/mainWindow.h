@@ -37,11 +37,11 @@ class MainWindow : public QMainWindow{
         void setPbt(bool bl); //pushButton
     public slots:
         int loop(); //loop
-        int expandData(QModelIndex&); //expand to treewidget
+        int expandData(const QModelIndex&); //expand to treewidget
         int decode(); //never in use
         int stop(); //stop loop
         int restart(); //restart loop
-        int decodeMsg(); //decode message from capture
+        int decodeMsg(const QModelIndex&); //decode message from capture
         int decodeMsgManual(); //decode message from manual
         int testTPDU();//test TPDU
         int trimTextEdit();//trim(remove space)

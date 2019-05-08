@@ -85,7 +85,7 @@ int main()
 		if(rlt ==  1)
 		{
 			printf("readFromUserBuff sucess.\n");
-			printf("%s\n", tdbk.extraInfo);			
+			printf("timestr:%s, tv_usec:%I64d, totallen:%d\n", tdbk.timestr, tdbk.tv_usec, tdbk.totallen);						
 			/* print ip addresses and udp ports */
 		    printf("%d.%d.%d.%d:%d --> %d.%d.%d.%d:%d\n",
 			    tdbk.ipSrc.byte1,

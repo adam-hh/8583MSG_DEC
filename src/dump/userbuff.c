@@ -54,7 +54,9 @@ extern int writeToUserBuff(userBuff *ubf, tcpDataBlock *blk, size_t dataLen)
     ubf->w->portSrc = blk->portSrc;
     ubf->w->portDst = blk->portDst;
     ubf->w->dataLen = blk->dataLen;
-    memcpy(ubf->w->extraInfo, blk->extraInfo, EXTRAINFOSIZE);
+    memcpy(ubf->w->timestr, blk->timestr, TIMESTRSIZE);
+    ubf->w->tv_usec = blk->tv_usec;
+    ubf->w->totallen = blk->totallen;
 
     if((ubf->w->data = (u8 *)malloc(dataLen)) == NULL)
         return -1;
@@ -77,7 +79,10 @@ extern int readFromUserBuff(userBuff *ubf, tcpDataBlock* blk)
     blk->portSrc = ubf->r->portSrc;
     blk->portDst = ubf->r->portDst;
     blk->dataLen = ubf->r->dataLen;
-    memcpy(blk->extraInfo, ubf->r->extraInfo, EXTRAINFOSIZE);
+    memcpy(blk->timestr, ubf->r->timestr, TIMESTRSIZE);
+    blk->tv_usec = ubf->r->tv_usec;
+    blk->totallen = ubf->r->totallen;
+
     if((blk->data = (u8 *)malloc(blk->dataLen)) == NULL)
         return -1;
     memcpy(blk->data, ubf->r->data, blk->dataLen);

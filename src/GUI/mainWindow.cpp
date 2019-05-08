@@ -68,10 +68,9 @@ DEC::MainWindow::MainWindow() :
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(loop()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
-    connect(ui->treeView, SIGNAL(pressed(QModelIndex&)), this, SLOT(expandData(QModelIndex&)));
+    connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(expandData(QModelIndex)));
+    connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(decodeMsg(const QModelIndex)));
 
-    //connect(ui->treeView, SIGNAL(itemSelectionChanged()), this, SLOT(decodeMsg()));
-    //connect(ui->treeView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(decodeMsg()));
     connect(ui->pushButton_9, SIGNAL(clicked()), this, SLOT(decodeMsgManual()));
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(testTPDU()));
     connect(ui->pushButton_6, SIGNAL(clicked()), this, SLOT(trimTextEdit()));
@@ -114,21 +113,14 @@ int DEC::MainWindow::loop()
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
     }
-    /*
-    ThreadTreeView *t1 = new ThreadTreeView(model);
-    t1->moveToThread(&T1);
-    T1.start();
-    connect(&T1, SIGNAL(started()), t1, SLOT(startCapture()));
-    */
     ui->pushButton->setEnabled(false);
     ui->pushButton_4->setEnabled(false);
     ui->pushButton_2->setEnabled(true);
     ui->pushButton_3->setEnabled(true);
     return 1;
 }
-int DEC::MainWindow::expandData(QModelIndex& index)
+int DEC::MainWindow::expandData(const QModelIndex& index)
 {
-    QMessageBox::information(this, "Title", "Error joining thread pthLoop.");
     DEC::dataItem *currentItem = static_cast<DEC::dataItem*>(index.internalPointer());
     if(currentItem != NULL){
         QByteArray qB2 = QByteArray::fromRawData((char*)currentItem->tcpData()->data, currentItem->tcpData()->dataLen).toHex(0x20);
@@ -175,15 +167,15 @@ int DEC::MainWindow::restart()
     ui->textBrowser->clear();
     return 1;
 }
-int DEC::MainWindow::decodeMsg()
-{/*
+int DEC::MainWindow::decodeMsg(const QModelIndex& index)
+{
+    DEC::dataItem *currentItem = static_cast<DEC::dataItem*>(index.internalPointer());
     ui->textBrowser_2->setPlainText(NULL);
     ui->tableWidget->clearContents();
-    int in = ui->treeWidget->indexOfTopLevelItem(ui->treeWidget->currentItem());
     //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#0000FF"));
-    if(in < vec.size()){
+    if(currentItem != NULL){
         u32 msg8583Len = 0;
-        u8* msg8583 = ::testTPDU("6000010000", vec[in].data, vec[in].dataLen, &msg8583Len);
+        u8* msg8583 = ::testTPDU("6000010000", currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             MsgJL msgjl = {0};
             initConsoleBuf();
@@ -222,21 +214,21 @@ int DEC::MainWindow::decodeMsg()
                 F(Field51, 54) F(Field52, 55) F(Field53, 56) F(Field54, 57) F(Field55, 58) F(Field56, 59) F(Field57, 60) F(Field58, 61) F(Field59, 62) F(Field60, 63)
                 F(Field61, 64) F(Field62, 65) F(Field62, 66) F(Field63, 67) F(Field64, 68)
                 #undef F
-                ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#00FF00"));
+                //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#00FF00"));
             }else{
                 //QMessageBox::information(this, "Title", "decodeMsgManual(illegal field) fail.");
-                ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
+                //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
                 return -1;
             }
             ui->textBrowser_2->setPlainText(QString::asprintf("%s", consolebuffer.buf));
             clearConsoleBuf();
         }else{
-            //QMessageBox::information(this, "Title", "decodeMsgManual(TPDU test fail) fail.");
-            ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
+            QMessageBox::information(this, "Title", "decodeMsgManual(TPDU test fail) fail.");
+            //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
             return -1;
         }
     }
-    return 1;*/
+    return 1;
 }
 int DEC::MainWindow::decodeMsgManual()
 {
@@ -409,7 +401,6 @@ void DEC::MainWindow::hideEvent(QHideEvent *event){
 }
 void DEC::MainWindow::timerEvent(QTimerEvent *event){
     if(event->timerId() == myTimeId  && model->rowCount() != treeViewUpdataFlag){
-        //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
         treeViewUpdataFlag = model->rowCount();
         ui->treeView->verticalScrollBar()->setValue(ui->treeView->verticalScrollBar()->maximum());
     }else{
