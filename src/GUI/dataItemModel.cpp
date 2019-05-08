@@ -64,10 +64,10 @@ Qt::ItemFlags DEC::dataItemModel::flags(const QModelIndex &index) const{
     return QAbstractItemModel::flags(index);
 }
 QModelIndex DEC::dataItemModel::index(int row, int column, const QModelIndex &parent) const{
-    if(row >= rowCount(QModelIndex()) || row < 0 || column >= columnNumCnt || column < 0)
+    if(row >= allRows.count() || row < 0 || column >= columnNumCnt || column < 0)
         return QModelIndex();
     DEC::dataItem *record;
-    record = allRows.at(row);
+    record = allRows[row];
     return createIndex(row, column, record);
 }
 QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
@@ -76,12 +76,7 @@ QModelIndex DEC::dataItemModel::parent(const QModelIndex &index) const{
 int DEC::dataItemModel::rowCount(const QModelIndex &parent) const {
     if(parent.column() >= columnNumCnt)
         return 0;
-    int cnt = 0;
-    QMutexLocker(&DEC::mutex);
-    {
-        cnt = allRows.count();
-    }
-    return cnt;
+    return allRows.count();
 }
 int DEC::dataItemModel::columnCount(const QModelIndex &parent) const{
     return columnNumCnt;
@@ -99,31 +94,26 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     DEC::dataItem *record = new DEC::dataItem(item);
     int pos = -1;
     mutex.lock();
-    {
-        newRows << record;
-    }
-    mutex.unlock();
+    newRows << record;
     if(newRows.count() < 2){
         QTimer::singleShot(0, this, SLOT(flushVisibleRows()));
     }
+    mutex.unlock();
     pos = allRows.count() + newRows.count() - 1;
     return pos;
 }
 void DEC::dataItemModel::flushVisibleRows(){
+    mutex.lock();
     int pos = allRows.count();
     if(newRows.count() > 0){
         beginInsertRows(QModelIndex(), pos, pos + newRows.count());
-        if(mutex.tryLock()){
-            foreach(DEC::dataItem *record, newRows){
-                record->setRow(pos++);
-                allRows << record;
-            }
-            newRows.resize(0);
-            mutex.unlock();
-        }else{
-            qDebug() << "error flushVisibleRows";
+        foreach(DEC::dataItem *record, newRows){
+            record->setRow(pos++);
+            allRows << record;
         }
         endInsertRows();
+        newRows.resize(0);
+        mutex.unlock();
     }
 }
 QVector<DEC::dataItem*> DEC::dataItemModel::allRows = QVector<DEC::dataItem*>(1000000);

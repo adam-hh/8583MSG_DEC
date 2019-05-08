@@ -50,7 +50,7 @@ class MainWindow : public QMainWindow{
     protected:
         void timerEvent(QTimerEvent *event);
         void showEvent(QShowEvent *event);
-        //void hideEvent(QHideEvent *event);
+        void hideEvent(QHideEvent *event);
     private slots:
         void findInterface();
 

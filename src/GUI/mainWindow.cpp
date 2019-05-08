@@ -403,11 +403,10 @@ int DEC::MainWindow::clearTextEdit()//clear
 void DEC::MainWindow::showEvent(QShowEvent *event){
     myTimeId = startTimer(1000);
 }
-/*
 void DEC::MainWindow::hideEvent(QHideEvent *event){
     killTimer(myTimeId);
     myTimeId = 0;
-}*/
+}
 void DEC::MainWindow::timerEvent(QTimerEvent *event){
     if(event->timerId() == myTimeId  && model->rowCount() != treeViewUpdataFlag){
         //QMetaObject::invokeMethod(model, "layoutChanged", Qt::QueuedConnection);
