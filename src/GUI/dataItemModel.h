@@ -8,8 +8,10 @@
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QDebug>
+#include <QtGui/QBrush>
+#include <QtGui/QColor>
 #include "8583dump.h"
-
+#define TPDU_JL "6000010000"
 namespace DEC{
 extern QMutex mutex;
 class dataItemModel : public QAbstractItemModel{

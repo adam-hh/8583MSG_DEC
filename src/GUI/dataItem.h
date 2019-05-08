@@ -5,17 +5,18 @@
 #include <QtCore/QList>
 #include "8583.h"
 #include "8583dump.h"
-typedef enum{
-Gray = 0,
-White,
-Green,
-Red
-}DECCOLOR;
+
 namespace DEC
 {
+typedef enum{
+    GRAY = 0,
+    WHITE,
+    GREEN,
+    YELLOW
+}DECCOLOR;
 class dataItem{
 public:
-    explicit dataItem(tcpDataBlock* data = nullptr, int rowNum = 0, int color = 0);
+    explicit dataItem(tcpDataBlock* data = nullptr, int rowNum = 0, int color = GRAY);
     ~dataItem();
 
     tcpDataBlock* tcpData(){return fdata;}
@@ -32,9 +33,9 @@ public:
         return color;
     }
 private:
-    tcpDataBlock* fdata;
-    int rowNum;
-    int color;
+    tcpDataBlock* fdata;//raw data source
+    int rowNum;//row number
+    int color;//background color
 };
 
 } // namespace DEC

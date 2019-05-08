@@ -17,8 +17,8 @@
 #include <QtCore/QMutexLocker>
 #include "dataItem.h"
 #include "dataItemModel.h"
-
 #define MAXSINGLEMSGLEN 10240
+
 extern QVector<tcpDataBlock*> vec; //store captured data
 namespace Ui {
     class MainWindow;
@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow{
         int stop(); //stop loop
         int restart(); //restart loop
         int decodeMsg(const QModelIndex&); //decode message from capture
-        int decodeMsgManual(); //decode message from manual
+        int decodeMsgManual(); //decode message from manual input
         int testTPDU();//test TPDU
         int trimTextEdit();//trim(remove space)
         int alignTextEdit();//align(add space)

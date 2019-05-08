@@ -69,7 +69,7 @@ DEC::MainWindow::MainWindow() :
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
     connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(expandData(QModelIndex)));
-    connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(decodeMsg(const QModelIndex)));
+    connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(decodeMsg(const QModelIndex)));
 
     connect(ui->pushButton_9, SIGNAL(clicked()), this, SLOT(decodeMsgManual()));
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(testTPDU()));
@@ -172,15 +172,13 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
     DEC::dataItem *currentItem = static_cast<DEC::dataItem*>(index.internalPointer());
     ui->textBrowser_2->setPlainText(NULL);
     ui->tableWidget->clearContents();
-    //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#0000FF"));
     if(currentItem != NULL){
         u32 msg8583Len = 0;
-        u8* msg8583 = ::testTPDU("6000010000", currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
+        u8* msg8583 = ::testTPDU(TPDU_JL, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             MsgJL msgjl = {0};
             initConsoleBuf();
             if(OK == DecodeJLMsg(msg8583, msg8583Len, &msgjl)){
-                //QMessageBox::information(this, "Title", "decodeMsgManual sucess.");// decode sucess
                 QByteArray tmp = QByteArray::fromRawData((char*)msgjl.MsgLen, sizeof(msgjl.MsgLen)).toHex();
                 ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
                 ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
@@ -214,17 +212,13 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
                 F(Field51, 54) F(Field52, 55) F(Field53, 56) F(Field54, 57) F(Field55, 58) F(Field56, 59) F(Field57, 60) F(Field58, 61) F(Field59, 62) F(Field60, 63)
                 F(Field61, 64) F(Field62, 65) F(Field62, 66) F(Field63, 67) F(Field64, 68)
                 #undef F
-                //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#00FF00"));
             }else{
-                //QMessageBox::information(this, "Title", "decodeMsgManual(illegal field) fail.");
-                //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
-                return -1;
+                ui->textBrowser_2->setPlainText("decoding(illegal fields) fail.");
             }
             ui->textBrowser_2->setPlainText(QString::asprintf("%s", consolebuffer.buf));
             clearConsoleBuf();
         }else{
-            QMessageBox::information(this, "Title", "decodeMsgManual(TPDU test fail) fail.");
-            //ui->treeWidget->currentItem()->setBackgroundColor(0, QColor("#FF0000"));
+            ui->textBrowser_2->setPlainText("decoding(TPDU test fail) fail.");
             return -1;
         }
     }
@@ -298,13 +292,12 @@ int DEC::MainWindow::decodeMsgManual()
             #undef F
         }
         else{
-             QMessageBox::information(this, "Title", "decodeMsgManual(illegal field) fail.");
-             return -1;
+            ui->textBrowser_2->setPlainText("decoding(illegal fields) fail.");
         }
-        ui->textBrowser_2->setPlainText(QString::asprintf("%s", consolebuffer.buf));
+        ui->textBrowser_2->append(QString::asprintf("%s", consolebuffer.buf));
         clearConsoleBuf();
     }else{
-        QMessageBox::information(this, "Title", "decodeMsgManual(TPDU test fail) fail.");
+        ui->textBrowser_2->append("decoding(TPDU test fail) fail.");
         return -1;
     }
     return 1;
@@ -321,7 +314,7 @@ int DEC::MainWindow::testTPDU()//test TPDU
     strcpy(msgInput, ui->textEdit->toPlainText().toLocal8Bit().data());
     u32 len = strlen(msgInput);
     if(len < 11){
-        QMessageBox::information(this, "Title", "test TPDU fail.");
+        QMessageBox::information(this, "Title", "test TPDU(data too short) fail.");
         return -1;
     }
     u8* msg = (u8*)malloc(len / 2);

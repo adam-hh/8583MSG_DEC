@@ -55,6 +55,13 @@ QVariant DEC::dataItemModel::data(const QModelIndex &index, int role) const{
                     return QVariant();
         }
     }
+    if(role == Qt::BackgroundRole){
+        switch(item->getColor()){
+            case GREEN: return QBrush(QColor("#00FF7F"));//SpringGreen1
+            case YELLOW: return QBrush(QColor("FFFF00"));//Yellow
+            default: return QBrush(QColor("#F5F5F5"));//WhiteSmoke
+        }
+    }
     return QVariant();
 }
 
@@ -94,6 +101,17 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     DEC::dataItem *record = new DEC::dataItem(item);
     int pos = -1;
     mutex.lock();
+    u32 msg8583Len = 0;
+    u8* msg8583 = ::testTPDU(TPDU_JL, item->data, item->dataLen, &msg8583Len);
+    if(NULL != msg8583){
+        MsgJL msgjl = {0};
+        initConsoleBuf();
+        if(OK == DecodeJLMsg(msg8583, msg8583Len, &msgjl)){
+            record->setColor(GREEN);
+        }else{
+            record->setColor(YELLOW);
+        }
+    }
     newRows << record;
     if(newRows.count() < 2){
         QTimer::singleShot(0, this, SLOT(flushVisibleRows()));

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>8583报文解码 V4.0@胡辉</string>
+   <string>8583报文解码 V4.1@胡辉</string>
   </property>
   <property name="windowIcon">
    <iconset resource="icons.qrc">
@@ -53,7 +53,7 @@
           <item>
            <widget class="QLineEdit" name="lineEdit">
             <property name="placeholderText">
-             <string>tcp\\sport(\\s[0-9]{1,5})+</string>
+             <string>tcp port 443</string>
             </property>
            </widget>
           </item>
@@ -367,7 +367,7 @@
              <bool>false</bool>
             </property>
             <property name="placeholderText">
-             <string>手输报文</string>
+             <string>手输报文，使用底下两排面板上的控件协助解包</string>
             </property>
            </widget>
           </item>
@@ -404,7 +404,7 @@
             <item>
              <widget class="QLineEdit" name="lineEdit_2">
               <property name="placeholderText">
-               <string>[0-9]{10}</string>
+               <string>10个数字</string>
               </property>
              </widget>
             </item>

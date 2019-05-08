@@ -9,11 +9,11 @@ int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst)
         printConsole("message length too short.\n");
         return FAIL;
     }
-#define MEMVIOLATIONCHECK if((curpos - src) >= len) return FATAL_ERROR;
+#define MEMVIOLATIONCHECK if((curpos - src) >= len) {printConsole("fatal error: memory violation detected when process decoding.\n");return FATAL_ERROR;}
 #define TEST(x) BitMaptest(x, dst->Field1, dst->Field1_l)
 #define PRINT(x) printConsole(#x); printConsole(":"); printMemS(dst->x, dst->x##_l, tmpmsg); printConsole(tmpmsg); printConsole("\n")
 #define PRINT_F(x) printConsole(#x); printConsole(" not exist.\n")
-#define PRINT_E(x) printConsole("fatal error when processing "); printConsole(#x); printf("\n") 
+#define PRINT_E(x) printConsole("fatal error(unknow) when processing "); printConsole(#x); printConsole("\n") 
 #define PRINT_NDEF(x) printConsole("fatal error: undefined "); printConsole(#x); printConsole(" found.\n")
 	const u8* curpos = src;
 	int rlt = FAIL;
