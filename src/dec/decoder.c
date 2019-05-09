@@ -37,6 +37,7 @@ int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst)
     memcpy(dst->Field0, curpos, 3);
     curpos += 3;MEMVIOLATIONCHECK
 	sprintf(tmpmsg, "Field0:%.2x%.2x%.2x\n", dst->Field0[0], dst->Field0[1], dst->Field0[2]);
+	printConsole(tmpmsg);
 	
 	dst->Field1 = curpos;
     if(*curpos > 0x80){

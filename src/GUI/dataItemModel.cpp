@@ -58,7 +58,7 @@ QVariant DEC::dataItemModel::data(const QModelIndex &index, int role) const{
     if(role == Qt::BackgroundRole){
         switch(item->getColor()){
             case GREEN: return QBrush(QColor("#00FF7F"));//SpringGreen1
-            case YELLOW: return QBrush(QColor("FFFF00"));//Yellow
+            case YELLOW: return QBrush(QColor("#FFFF00"));//Yellow
             default: return QBrush(QColor("#F5F5F5"));//WhiteSmoke
         }
     }

@@ -183,12 +183,12 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
                 ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
                 ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-                tmp = QByteArray::fromRawData((char*)msgjl.MsgHead, sizeof(msgjl.MsgHead)).toHex();
-                ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgHead"));
+                tmp = QByteArray::fromRawData((char*)msgjl.MsgTPDU, sizeof(msgjl.MsgTPDU)).toHex();
+                ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgTPDU"));
                 ui->tableWidget->setItem(1, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-                tmp = QByteArray::fromRawData((char*)msgjl.MsgTPDU, sizeof(msgjl.MsgTPDU)).toHex();
-                ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgTPDU"));
+				tmp = QByteArray::fromRawData((char*)msgjl.MsgHead, sizeof(msgjl.MsgHead)).toHex();
+                ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgHead"));
                 ui->tableWidget->setItem(2, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
                 tmp = QByteArray::fromRawData((char*)msgjl.Field0, sizeof(msgjl.Field0)).toHex();
@@ -261,12 +261,12 @@ int DEC::MainWindow::decodeMsgManual()
             ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
             ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msgjl.MsgHead, sizeof(msgjl.MsgHead)).toHex();
-            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgHead"));
+            tmp = QByteArray::fromRawData((char*)msgjl.MsgTPDU, sizeof(msgjl.MsgTPDU)).toHex();
+            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgTPDU"));
             ui->tableWidget->setItem(1, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msgjl.MsgTPDU, sizeof(msgjl.MsgTPDU)).toHex();
-            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgTPDU"));
+			tmp = QByteArray::fromRawData((char*)msgjl.MsgHead, sizeof(msgjl.MsgHead)).toHex();
+            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgHead"));
             ui->tableWidget->setItem(2, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
             tmp = QByteArray::fromRawData((char*)msgjl.Field0, sizeof(msgjl.Field0)).toHex();
