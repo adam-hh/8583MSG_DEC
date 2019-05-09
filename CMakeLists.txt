@@ -4,8 +4,10 @@ project(8583MSG_DEC C CXX)
 set(PRODIR "F:\\DevProjects\\8583MSG_DEC")
 set(QTDIR "C:\\Qt\\Qt5.12.2")
 set(CYGWINDIR "D:\\cygwin64")
+
 set(CMAKE_SOURCE_DIR  "src")
 set(CMAKE_BINARY_DIR  "output")
+
 # detect operating system and host processor
 message(STATUS "We are on a ${CMAKE_SYSTEM_NAME} system")
 message(STATUS "The host processor is ${CMAKE_HOST_SYSTEM_PROCESSOR}")
@@ -73,7 +75,7 @@ add_library(decl STATIC ${decRES})
 add_library(dumpl STATIC ${dumpRES})
 add_executable(dec ${decRES})
 add_executable(dump ${dumpRES})
-add_executable(gui WIN32 ${GUIRES})
+add_executable(gui WIN32 ${GUIRES} ${CMAKE_SOURCE_DIR}/project.rc)
 
 target_link_libraries(dump ${PRODIR}/Lib/x64/wpcap.lib)
 target_link_libraries(gui ${PRODIR}/Lib/x64/libdumpl.a ${PRODIR}/Lib/x64/libdecl.a ${PRODIR}/Lib/x64/wpcap.lib Qt5::Core Qt5::Widgets Qt5::Test)
