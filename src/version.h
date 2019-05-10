@@ -2,6 +2,9 @@
 #define VERSION_H
 
 #define PRODUCT_ICON           "bugger.ico" // 图标
+#define TESTER_ICON             "tester.ico"
+#define TERMINAL_ICON           "terminal.ico"
+#define START_ICON              "start.ico"
 
 #define FILE_VERSION           4,0,2,666   // 文件版本
 #define FILE_VERSION_STR       "4.0.2.666"
