@@ -34,55 +34,81 @@ int printConsole(s8* str)
     }
 }
 
+typedef union{
+		u32 a;
+		u8 b;
+		u8 c[3];
+}U4_BIGEDIAN;
+typedef union{
+		u32 a;
+		u8 b[3];
+		u8 c;
+}U4_LITEDIAN;
 u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag)
 {
     u32 val = 0;
     switch(flag){
         case NOFORMAT:
-        case NOFORMAT_BIGEDIAN:
-            if(len > 4){
-                printConsole("calLenField failed");
-                return 0;
-            }
-            for(int i=0; i<len; i++){
-                val += (u32)(*(src + len -1 -i)) << 8*i;
-            }
-            return val;
-        case NOFORMAT_LITEDIAN:
-            if(len > 4){
-                printConsole("calLenField failed");
-                return 0;
-            }
-            for(int i=0; i<len; i++){
-                val += (u32)(*(src + i)) << 8*i;
-            }
-            return val;
+        case NOFORMAT_BIGEDIAN:     			
+			U4_BIGEDIAN u4 = {0};
+            switch(len){
+				case 0: return 0;
+				case 1: return (u32)(*src);
+				case 2: 
+					u16 tmpu16 = 0;
+					toLittleEndian((u16*)src, sizeof(u16), &tmpu16)
+					return (u32)tmpu16;
+				case 3:
+					u4.c[0] = *src++;
+					u4.c[1] = *src++;
+					u4.c[2] = *src;
+					toLittleEndian(&(u4.a), sizeof(u4), &(u4.a));
+					return u4.a;
+				case 4: 
+					u32 tmpu32 = 0;
+					toLittleEndian((u32*)src, sizeof(u32), &tmpu32);
+					return tmpu32;
+				default: 
+					printConsole("calLenField failed");
+					return 0;
+            	}
+        case NOFORMAT_LITEDIAN:            
+			U4_LITEDIAN u4 = {0};
+            switch(len){
+				case 0: return 0;
+				case 1: return (u32)(*src);
+				case 2: 
+					return (u32)*(u16*)src;
+				case 3:
+					u4.b[0] = *src++;
+					u4.b[1] = *src++;
+					u4.b[2] = *src;
+					return u4.a;
+				case 4: return *(u32*)src;
+				default: 
+					printConsole("calLenField failed");
+					return 0;
+            	}
         case BCD:
         case BCDRALIGN:
-            if(len < 1){
-                printConsole("illegal BCD digit.\n");
-                return 0;
-            }
-            u32 valh = 0;
-            u32 vall = 0;
-            for(int i=0; i<len; i++)
-            {
-                valh = (*(src + i) & 0xF0) >> 4;
-                vall = *(src + i) & 0x0F;
-                if((valh>0x9) || (vall>9)){
-                    printConsole("illegal BCD digit.\n");
-                    return 0;
-                }
-                for(int j=1; j<(2*(len - i)); j++){
-                    valh *= 10;
-                }
-                val += valh;
-                for(int j=1; j<(2*(len - i) - 1); j++){
-                    vall *= 10;
-                }
-                val += vall;
-            }
-            return val;
+			s8 bcdEncoded[2 * len + 1];
+			for(size_t i=0; i < 2*len + 1; i++)
+				bcdEncoded[i] = 0;
+			if(BCDDecode(src, len, bcdEncoded) != 1)
+				return 0;
+			s8 *ptr = bcdEncoded;
+			int i = strlen(bcdEncoded);
+			while(*ptr){
+				if(*ptr != 0x30){
+					u32 tmpval = *ptr - 0x30;
+					for(int k=0; k<i-1; k++)
+						tmpval *= 10;
+					val += tmpval;
+				}
+				i--;
+				ptr++;
+			}
+			return val;			
         case BCDLALIGN:
             printConsole("BCD digit left align is not supported.\n");
             return 0;
@@ -305,4 +331,76 @@ u8* testTPDU(const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
         }
     }
     return NULL;
+}
+
+void* toLittleEndian(const void* src, size_t len, void* dst){
+	if(src != dst)
+		for(size_t i = 0; i < len; i++){		
+			*(char*)(dst + len - 1 - i) = *(char*)(src + i);
+		}
+	else{
+		for(size_t i = 0; i < len / 2; i++){
+			char tmp = *(char*)(dst + i);
+			*(char*)(dst + i) = *(char*)(dst + len - 1 - i);
+			*(char*)(dst + len - 1 - i) = tmp;
+		}
+	}		
+	return dst;
+}
+void* toBigEndian(const void* src, size_t len, void* dst){
+	return toLittleEndian(src, len, dst);
+}
+int BCDEncode(const char* src, size_t len, void* dst, BCDALIGN align){
+	size_t srclen = strlen(src);
+	if(srclen <= 2 * len){
+		u8 newsrc[2 * len + 1];
+		u8 *newsrcptr = newsrc;
+		for(size_t i=0; i<2*len; i++)
+			newsrc[i] = 0x30;
+		newsrc[2*len] = 0;
+		switch(align){
+			case BCDRIGHTALIGN:
+				memcpy(newsrc + (2*len - srclen), (u8*)src, srclen);				
+				while(*newsrcptr){
+					if(isdigit(*newsrcptr)){
+						u8 h4 = (*newsrcptr++ - 0x30) << 4;
+						u8 l4 = *newsrcptr++ - 0x30;
+						*(u8*)dst++ = h4 + l4;						
+					}
+					else
+						return -1;
+				}
+				return 1;
+			case BCDLEFTALIGIN:
+				memcpy(newsrc, (u8*)src, srclen);
+				while(*newsrcptr){
+					if(isdigit(*newsrcptr)){
+						u8 h4 = (*newsrcptr++ - 0x30) << 4;
+						u8 l4 = *newsrcptr++ - 0x30;
+						*(u8*)dst++ = h4 + l4;						
+					}
+					else
+						return -1;
+				}
+				return 1;
+			default: return -1;
+		}		
+	}
+	else
+		return -1;
+}
+int BCDDecode(const void* src, size_t len, char* dst){
+	for(size_t i = 0; i < len; i++){
+		if(((*(u8*)src & 0xF0) >> 4) < 0x0A)
+			*(dst + 2*i) = ((*(u8*)src & 0xF0) >> 4) + 0x30;
+		else
+			return -1;
+		if((*(u8*)src & 0x0F) < 0x0A)
+			*(dst + 2*i + 1) = (*(u8*)src & 0x0F) + 0x30;
+		else
+			return -1;
+		(u8*)src++;
+	}
+	*(u8*)(dst + 2 * len) = 0x00; 
+	return 1;
 }

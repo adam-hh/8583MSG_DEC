@@ -29,6 +29,10 @@ typedef enum{
 	BCDRALIGN,
 	ASCII
 }DIGITENCODEFORMAT;
+typedef enum{
+	BCDRIGHTALIGN,
+	BCDLEFTALIGIN
+}BCDALIGN;
 
 //JL 8583 message body
 #define F(x) const u8* Field##x; u32 Field##x##_l
@@ -71,6 +75,12 @@ extern int printConsole(s8*);
 //Decode engine
 extern int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst);
 
+//basic tools
+extern void* toLittleEndian(const void* src, size_t len, void* dst); //reverse the src, src and dst can be equal
+extern void* toBigEndian(const void* src, size_t len, void* dst); //the same with toLittleEndian
+extern int BCDEncode(const char* src, size_t len, void* dst, BCDALIGN align); 
+extern int BCDDecode(const void* src, size_t len, char* dst);
+
 //tools
 extern u8* testTPDU(const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);
 extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
@@ -79,7 +89,7 @@ extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
 extern void printMem(const u8*, u32);
 extern void printMemS(const u8* src, u32 len, s8* dst);
 extern int BitMaptest(const int, const u8*, u32);
-#undef F
+
 
 #ifdef __cplusplus
 }
