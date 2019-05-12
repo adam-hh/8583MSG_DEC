@@ -78,6 +78,8 @@ void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *
 	tb.dataLen = header->caplen;
 
 	int rlt = writeToUserBuff((userBuff *)param, &tb, header->caplen);
+	//free(header);
+	//free(pkt_data);
 	if(-1 == rlt)
 		fprintf(stderr, "writeToUserBuff fatal error occured.\n");
 }

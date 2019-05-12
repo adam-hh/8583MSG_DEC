@@ -7,7 +7,7 @@
 #include "ui_mainwindow.h"
 #include "interfaceDialog.h"
 #include "8583dump.h"
-#include "pthread.h"
+#include <pthread.h>
 
 void *threadScan(void *arg){
     DEC::interfaceDialog::scanDev();
@@ -27,7 +27,5 @@ int main(int argc, char *argv[])
         printf("error creating thread.");
         abort();
     }
-    if((usbf = initUserBuff(100000)) == NULL)
-        QMessageBox::information(u, "Title", "initUserBuff(100000) failed.");
     return app.exec();
 }

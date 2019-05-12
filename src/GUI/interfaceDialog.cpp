@@ -55,8 +55,7 @@ void DEC::interfaceDialog::accept()
 		return;
 	}
     PHandle.avaliable = 1;
-    //QMessageBox::information(this, "Title", ui->treeWidget->currentItem()->text(1));
-    this->setVisible(false);    
+    this->setVisible(false);
     thisParent->setPbt(true);
 }
 void DEC::interfaceDialog::reject()
@@ -102,9 +101,8 @@ int DEC::interfaceDialog::scanDev()
         if (p->description)
             str.append(p->description);
         else
-            str.append(p->description);
+            str.append("unkonwn");
         /* Name */
-        printf("%s\n",p->name);
         str.append(p->name);
         /* Comments */
         str.append("...");

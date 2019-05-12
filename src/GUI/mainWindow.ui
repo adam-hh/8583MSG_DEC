@@ -367,7 +367,7 @@
              <bool>false</bool>
             </property>
             <property name="placeholderText">
-             <string>手输报文，使用底下两排面板上的控件协助解包</string>
+             <string>手输报文，使用底下两排面板上的按钮和输入框协助解包</string>
             </property>
            </widget>
           </item>

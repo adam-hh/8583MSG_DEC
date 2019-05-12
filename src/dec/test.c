@@ -42,17 +42,17 @@ int main()
     HexcharStringRevert(MsgDef, msg, len);
     printMem(msg, len);
     u32 tpduLen = 0;
-    s8 tpdu[] = "6010000001";
+    s8 tpdu[] = "6010000000";
     if(NULL != testTPDU(tpdu, msg, len, &tpduLen)){
         printf("%s test pass, message length is %u\n", tpdu, tpduLen);
     }else{
         printf("%s test failed.\n", tpdu);
     }
 
-    // MsgJL jl = {0};
-    // if(OK == DecodeJLMsg(msg, len, &jl)){
-    //     printf("DecodeJLMsg sucess.\n");
-    //     printf("%s", consolebuffer.buf);
-    // }
+    MsgJL jl = {0};
+    if(OK == DecodeJLMsg(msg, len, &jl)){
+        printf("DecodeJLMsg sucess.\n");
+        printf("%s", consolebuffer.buf);
+    }
     free(msg);
 }

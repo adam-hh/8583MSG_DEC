@@ -19,12 +19,12 @@
 #include "dataItemModel.h"
 #define MAXSINGLEMSGLEN 10240
 
-extern QVector<tcpDataBlock*> vec; //store captured data
 namespace Ui {
     class MainWindow;
 }
 namespace DEC {
 extern QMutex mutex;
+extern QVector<tcpDataBlock*> vec;
 class interfaceDialog;
 class MainWindow : public QMainWindow{
     Q_OBJECT
@@ -53,8 +53,9 @@ class MainWindow : public QMainWindow{
         void hideEvent(QHideEvent *event);
     private slots:
         void findInterface();
+        void selectDecoder(int);
 
-    private:        
+    private:
         DEC::interfaceDialog *itf;
         int myTimeId;
         volatile int treeViewUpdataFlag;

@@ -9,8 +9,7 @@ DEC::dataItemModel::dataItemModel(QStringList headers, QObject *parent)
         columnNumCnt = 7;
 }
 DEC::dataItemModel::~dataItemModel(){
-    //qDeleteAll(newRows);
-    //qDeleteAll(allRows);
+    resetModel();
 }
 DEC::dataItem *DEC::dataItemModel::itemFromIndex(const QModelIndex &index) const{
     if(!index.isValid())
@@ -90,7 +89,7 @@ int DEC::dataItemModel::columnCount(const QModelIndex &parent) const{
 }
 
 void DEC::dataItemModel::resetModel(){
-    beginResetModel();
+    //beginResetModel();
     qDeleteAll(allRows);
     allRows.resize(0);
     qDeleteAll(newRows);
@@ -102,11 +101,11 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     int pos = -1;
     mutex.lock();
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(TPDU_JL, item->data, item->dataLen, &msg8583Len);
+    u8* msg8583 = ::testTPDU(tpdu, item->data, item->dataLen, &msg8583Len);
     if(NULL != msg8583){
         MsgJL msgjl = {0};
         initConsoleBuf();
-        if(OK == DecodeJLMsg(msg8583, msg8583Len, &msgjl)){
+        if(OK == decode(msg8583, msg8583Len, &msgjl)){
             record->setColor(GREEN);
         }else{
             record->setColor(YELLOW);
@@ -134,5 +133,7 @@ void DEC::dataItemModel::flushVisibleRows(){
         mutex.unlock();
     }
 }
-QVector<DEC::dataItem*> DEC::dataItemModel::allRows = QVector<DEC::dataItem*>(1000000);
-QVector<DEC::dataItem*> DEC::dataItemModel::newRows = QVector<DEC::dataItem*>(10000);
+QVector<DEC::dataItem*> DEC::dataItemModel::allRows;
+QVector<DEC::dataItem*> DEC::dataItemModel::newRows;
+s8 DEC::dataItemModel::tpdu[11] = "6000010000";
+int (*DEC::dataItemModel::decode)(const u8*, u32, MsgJL*)  = ::DecodeJLMsg;

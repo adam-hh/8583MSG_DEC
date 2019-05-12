@@ -7,9 +7,9 @@
 #include <pthread.h>
 #include <QtCore/QList>
 
-QVector<tcpDataBlock*> vec; //raw data source
-pthread_t pthLoop, pthRead; //threads
+QVector<tcpDataBlock*> DEC::vec; //raw data source
 QMutex DEC::mutex; //mutex
+pthread_t pthLoop, pthRead; //threads
 void *threadLoop(void* arg)
 {
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
@@ -20,16 +20,17 @@ void *threadLoop(void* arg)
 void *threadReadData(void *arg)
 {
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
-    for(QVector<tcpDataBlock*>::iterator it = vec.begin(); it != vec.end(); it++){
-        free((*it)->data);
-        free(*it);
+    foreach(tcpDataBlock* it, DEC::vec){
+        free(it->data);
+        free(it);
     }
-    QVector<tcpDataBlock*>().swap(vec); //empty vec
+    //QVector<tcpDataBlock*>().swap(vec); //empty vec
+    DEC::vec.resize(0);
     um->model->resetModel(); //empty model
     while(true){
         tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
         if(1 == readFromUserBuff(usbf, b)){
-            vec.append(b); //store to raw data source
+            DEC::vec.append(b); //store to raw data source
             um->model->appendItem(b);//append to model(then show on GUI)
         }else{
             Sleep(100);
@@ -69,7 +70,8 @@ DEC::MainWindow::MainWindow() :
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ui->pushButton_3, SIGNAL(clicked()), this, SLOT(restart()));
     connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(expandData(QModelIndex)));
-    connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(decodeMsg(const QModelIndex)));
+    connect(ui->treeView, SIGNAL(pressed(QModelIndex)), this, SLOT(decodeMsg(QModelIndex)));
+    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectDecoder(int)));
 
     connect(ui->pushButton_9, SIGNAL(clicked()), this, SLOT(decodeMsgManual()));
     connect(ui->pushButton_5, SIGNAL(clicked()), this, SLOT(testTPDU()));
@@ -97,6 +99,7 @@ void DEC::MainWindow::setPbt(bool bl)
 }
 int DEC::MainWindow::loop()
 {
+    usbf = initUserBuff(100000);
     if(!(ui->lineEdit->hasAcceptableInput())){
         QMessageBox::information(this, "Title", "Reg mismatch.");
         return -1;
@@ -145,6 +148,7 @@ int DEC::MainWindow::stop()
         QMessageBox::information(this, "Title", "Error joining thread pthRead.");
         return -1;
     }
+    releaseUserBuff(usbf);
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
     ui->pushButton->setEnabled(true);
@@ -174,11 +178,11 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
     ui->tableWidget->clearContents();
     if(currentItem != NULL){
         u32 msg8583Len = 0;
-        u8* msg8583 = ::testTPDU(TPDU_JL, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
+        u8* msg8583 = ::testTPDU(model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             MsgJL msgjl = {0};
             initConsoleBuf();
-            if(OK == DecodeJLMsg(msg8583, msg8583Len, &msgjl)){
+            if(OK == model->decode(msg8583, msg8583Len, &msgjl)){
                 QByteArray tmp = QByteArray::fromRawData((char*)msgjl.MsgLen, sizeof(msgjl.MsgLen)).toHex();
                 ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
                 ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
@@ -218,7 +222,8 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
             ui->textBrowser_2->setPlainText(QString::asprintf("%s", consolebuffer.buf));
             clearConsoleBuf();
         }else{
-            ui->textBrowser_2->setPlainText("decoding(TPDU test fail) fail.");
+            //ui->textBrowser_2->setPlainText("decoding(TPDU %s test fail) fail.");
+            ui->textBrowser_2->setPlainText(QString::asprintf("decoding(TPDU %s test fail) fail.", model->tpdu));
             return -1;
         }
     }
@@ -384,6 +389,14 @@ int DEC::MainWindow::clearTextEdit()//clear
 {
     ui->textEdit->clear();
     return 1;
+}
+void DEC::MainWindow::selectDecoder(int index){
+    switch(index){
+        case -1: strcpy(model->tpdu, "6000010000");break;
+        case 0: strcpy(model->tpdu, "6000010000");break;
+        case 1: strcpy(model->tpdu, "6000010001");break;
+        default:strcpy(model->tpdu, "6000010000");break;
+    }
 }
 void DEC::MainWindow::showEvent(QShowEvent *event){
     myTimeId = startTimer(1000);

@@ -18,7 +18,6 @@ extern "C" {
 #define MAXMSGSIZE 1024
 #define VERB "B001"  // major version
 
-typedef enum {RIGHT, LEFT, DEFAULT} HowNumberAlign;
 //Digit encode format descriptor
 typedef enum{
 	NOFORMAT = 0,
@@ -29,10 +28,6 @@ typedef enum{
 	BCDRALIGN,
 	ASCII
 }DIGITENCODEFORMAT;
-typedef enum{
-	BCDRIGHTALIGN,
-	BCDLEFTALIGIN
-}BCDALIGN;
 
 //JL 8583 message body
 #define F(x) const u8* Field##x; u32 Field##x##_l
@@ -50,16 +45,9 @@ typedef struct{
 	F(61);F(62);F(63);F(64);
 }MsgJL;
 #undef F
-typedef struct{
-    u8 byte0;
-    u8 byte1;
-    u8 byte2;
-    u8 byte3;
-    u8 byte4;
-}TPDU;
 typedef union{
 	u64 val;
-	TPDU tpdu;
+	u8 tpdu[5];
 }TPDUUnion;
 
 //Console buffer to send messages to GUI side
@@ -76,19 +64,20 @@ extern int printConsole(s8*);
 extern int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst);
 
 //basic tools
+extern u8 xtoi(u8 chr); //chr is [0-9A-Za-z], return [0x0-0xF]
 extern void* toLittleEndian(const void* src, size_t len, void* dst); //reverse the src, src and dst can be equal
 extern void* toBigEndian(const void* src, size_t len, void* dst); //the same with toLittleEndian
-extern int BCDEncode(const char* src, size_t len, void* dst, BCDALIGN align); 
+extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT align); 
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
 //tools
-extern u8* testTPDU(const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);
+extern u8* testTPDU(const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
 extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
-extern void printMem(const u8*, u32);
-extern void printMemS(const u8* src, u32 len, s8* dst);
-extern int BitMaptest(const int, const u8*, u32);
+extern void printMem(const u8*, u32);//print to
+extern void printMemS(const u8* src, u32 len, s8* dst);//print to consolebuffer
+extern int BitMaptest(const int index, const u8* src, u32 len);
 
 
 #ifdef __cplusplus

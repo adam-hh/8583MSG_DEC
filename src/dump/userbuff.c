@@ -61,6 +61,7 @@ extern int writeToUserBuff(userBuff *ubf, tcpDataBlock *blk, size_t dataLen)
     if((ubf->w->data = (u8 *)malloc(dataLen)) == NULL)
         return -1;
     memcpy(ubf->w->data, blk->data, dataLen);
+    //free(blk->data);
 
     ubf->w->synFlag = 1;
     (ubf->w)++;

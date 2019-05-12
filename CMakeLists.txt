@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(8583MSG_DEC C CXX)
-set(PRODIR "E:\\DevProjects\\8583MSG_DEC")
-set(QTDIR "E:\\Qt\\Qt5.12.2")
-set(CYGWINDIR "D:\\cygwin64")
-
+if(WIN32)
+	set(PRODIR "E:\\DevProjects\\8583MSG_DEC")
+	set(QTDIR "E:\\Qt\\Qt5.12.2")
+	set(CYGWINDIR "D:\\cygwin64")
+endif()
 set(CMAKE_SOURCE_DIR  "src")
 set(CMAKE_BINARY_DIR  "output")
 
@@ -17,11 +18,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PRODIR}/Lib/x64)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PRODIR}/Lib/x64)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY .)
 
-set(CMAKE_C_COMPILER ${QTDIR}/Tools/mingw730_64/bin/gcc.exe)
-set(CMAKE_CXX_COMPILER ${QTDIR}/Tools/mingw730_64/bin/g++.exe)
-set(CMAKE_MAKE_PROGRAM ${QTDIR}/Tools/mingw730_64/bin/mingw32-make.exe)
-set(CMAKE_RC_COMPILER ${QTDIR}/Tools/mingw730_64/bin/windres.exe)
-set(CMAKE_SH ${CYGWINDIR}/sh.exe)
+if(WIN32)
+	set(CMAKE_C_COMPILER ${QTDIR}/Tools/mingw730_64/bin/gcc.exe)
+	set(CMAKE_CXX_COMPILER ${QTDIR}/Tools/mingw730_64/bin/g++.exe)
+	set(CMAKE_MAKE_PROGRAM ${QTDIR}/Tools/mingw730_64/bin/mingw32-make.exe)
+	set(CMAKE_RC_COMPILER ${QTDIR}/Tools/mingw730_64/bin/windres.exe)
+	set(CMAKE_SH ${CYGWINDIR}/sh.exe)
+	set(CMAKE_PREFIX_PATH ${QTDIR}/mingw73_64/lib/cmake)
+endif()
 # example how to set c/c++ compiler flags for GNU
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
 #	set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -Wall -Wno-unknown-pragmas -Wno-sign-compare -Wwrite-strings -Wno-unused")
@@ -42,7 +46,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Find the QtWidgets library
-set(CMAKE_PREFIX_PATH ${QTDIR}/mingw73_64/lib/cmake)
 find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5Test REQUIRED)
 

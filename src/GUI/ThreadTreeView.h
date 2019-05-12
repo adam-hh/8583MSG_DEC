@@ -6,7 +6,6 @@
 #include "mainWindow.h"
 #include "dataItemModel.h"
 
-extern QVector<tcpDataBlock*> vec; //store captured data
 namespace DEC{
 class ThreadTreeView : public QObject{
     Q_OBJECT
@@ -27,7 +26,7 @@ public slots:
             tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
             rlt = readFromUserBuff(usbf, b);
             if(1 == rlt){
-                vec.append(b);
+                DEC::vec.append(b);
                 if(model->appendItem(b) != model->rowCount())
                     Sleep(100);
                 //Sleep(10);
