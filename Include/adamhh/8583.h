@@ -78,15 +78,55 @@ typedef struct{
 extern ConsoleBuf consolebuffer;
 extern int initConsoleBuf();
 extern int clearConsoleBuf();
-extern int printConsole(s8*);
+static inline int printConsole(s8* str)
+{
+    if(strlen(str) >= CONSOLEBUFSIZE)
+        return -1;
+    if((strlen(consolebuffer.buf) + strlen(str)) < CONSOLEBUFSIZE){
+        strcat(consolebuffer.buf, str);
+        return 1;
+    }else{
+        clearConsoleBuf();
+        strcat(consolebuffer.buf, str);
+        return 0;
+    }
+}
 
 //Decode engine
 extern int DecodeJLMsg(const u8 *src, u32 len, void* dst);
 
 //basic tools
-extern u8 xtoi(u8 chr); //chr is [0-9A-Za-z], return [0x0-0xF]
-extern void* toLittleEndian(const void* src, size_t len, void* dst); //reverse the src, src and dst can be equal
-extern void* toBigEndian(const void* src, size_t len, void* dst); //the same with toLittleEndian
+static inline u8 xtoi(u8 chr){//chr is [0-9A-Za-z], return [0x0-0xF]
+    switch(chr){
+        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+            return chr - 0x30;
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+            return chr - 0x57;
+        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+            return chr - 0x37;
+        default: return 0;
+    }
+}
+static inline void* toLittleEndian(const void* src, size_t len, void* dst){//reverse the src, src and dst can be equal
+	u8* chrsrc = (u8*)src;
+    u8* chrdst = (u8*)dst + len -1;
+    if(src != dst){
+        while(chrsrc != (u8*)src + len){
+            *chrdst-- = *chrsrc++;
+        }
+    }
+	else{
+        while(chrsrc != (u8*)src + (len / 2)){
+            u8 tmp = *chrdst;
+            *chrdst-- = *chrsrc;
+            *chrsrc++ = tmp;
+        }
+	}
+	return dst;
+}
+static inline void* toBigEndian(const void* src, size_t len, void* dst){//the same with toLittleEndian
+	return toLittleEndian(src, len, dst);
+}
 extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT align); 
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
@@ -98,7 +138,6 @@ extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
 extern void printMem(const u8*, u32);//print to
 extern void printMemS(const u8* src, u32 len, s8* dst);//print to consolebuffer
 extern int BitMaptest(const int index, const u8* src, u32 len);
-
 
 #ifdef __cplusplus
 }

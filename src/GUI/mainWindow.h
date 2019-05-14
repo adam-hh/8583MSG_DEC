@@ -60,6 +60,7 @@ class MainWindow : public QMainWindow{
         int myTimeId;
         volatile int treeViewUpdataFlag;
         QThread T1;
+        void fillTable(void*);
     };
 }
 #endif // MAINWINDOW_H

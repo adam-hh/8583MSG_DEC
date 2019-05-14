@@ -20,20 +20,6 @@ int clearConsoleBuf(){
     return 1;
 }
 
-int printConsole(s8* str)
-{
-    if(strlen(str) >= CONSOLEBUFSIZE)
-        return -1;
-    if((strlen(consolebuffer.buf) + strlen(str)) < CONSOLEBUFSIZE){
-        strcat(consolebuffer.buf, str);
-        return 1;
-    }else{
-        clearConsoleBuf();
-        strcat(consolebuffer.buf, str);
-        return 0;
-    }
-}
-
 u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag)
 {
     u32 val = 0;
@@ -150,18 +136,6 @@ u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag)
         return (rlt + 1) / 2;
     }else{
         return rlt / 2;
-    }
-}
-
-u8 xtoi(u8 chr){
-    switch(chr){
-        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-            return chr - 0x30;
-        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-            return chr - 0x57;
-        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-            return chr - 0x37;
-        default: return 0;
     }
 }
 int HexcharStringRevert(const s8* src, u8* dst, u32 len)
@@ -286,27 +260,6 @@ u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen
         }
     }
     return NULL;
-}
-
-void* toLittleEndian(const void* src, size_t len, void* dst){
-	u8* chrsrc = (u8*)src;
-    u8* chrdst = (u8*)dst + len -1;
-    if(src != dst){
-        while(chrsrc != (u8*)src + len){
-            *chrdst-- = *chrsrc++;
-        }
-    }
-	else{
-        while(chrsrc != (u8*)src + (len / 2)){
-            u8 tmp = *chrdst;
-            *chrdst-- = *chrsrc;
-            *chrsrc++ = tmp;
-        }
-	}
-	return dst;
-}
-void* toBigEndian(const void* src, size_t len, void* dst){
-	return toLittleEndian(src, len, dst);
 }
 int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT align){
 	size_t srclen = strlen(src);

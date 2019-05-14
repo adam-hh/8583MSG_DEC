@@ -18,6 +18,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 	const u8* curpos = src;
 	int rlt = FAIL;
 	MsgJL* dst = (MsgJL*)dest;
+	memset(dst, 0, sizeof(MsgJL));
     s8 tmpmsg[MAXMSGSIZE] = {0};
 
     memcpy(dst->MsgLen, curpos, 2); 

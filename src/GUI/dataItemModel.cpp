@@ -103,9 +103,9 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     u32 msg8583Len = 0;
     u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
     if(NULL != msg8583){
-        MsgJL msgjl = {0};
+        //MsgJL msgjl = {0};
         initConsoleBuf();
-        if(OK == decoder(msg8583, msg8583Len, &msgjl)){
+        if(OK == decoder(msg8583, msg8583Len, ptr1)){
             record->setColor(GREEN);
         }else{
             record->setColor(YELLOW);
@@ -135,6 +135,9 @@ void DEC::dataItemModel::flushVisibleRows(){
 }
 QVector<DEC::dataItem*> DEC::dataItemModel::allRows;
 QVector<DEC::dataItem*> DEC::dataItemModel::newRows;
-s8 DEC::dataItemModel::tpdu[11] = "6000010000";
-u32 DEC::dataItemModel::customerid = CUSTOMER_JL;
-int (*DEC::dataItemModel::decoder)(const u8*, u32, void*)  = ::DecodeJLMsg;
+
+s8 DEC::dataItemModel::tpdu[11] = "6000010000";//JL
+u32 DEC::dataItemModel::customerid = CUSTOMER_JL;//JL
+int (*DEC::dataItemModel::decoder)(const u8*, u32, void*)  = ::DecodeJLMsg;//JL
+void* (DEC::dataItemModel::ptr1) = (void*)malloc(sizeof(MsgJL));//JL
+void* (DEC::dataItemModel::ptr2) = (void*)malloc(sizeof(MsgJL));//JL
