@@ -105,7 +105,7 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     if(NULL != msg8583){
         MsgJL msgjl = {0};
         initConsoleBuf();
-        if(OK == decode(msg8583, msg8583Len, &msgjl)){
+        if(OK == decoder(msg8583, msg8583Len, &msgjl)){
             record->setColor(GREEN);
         }else{
             record->setColor(YELLOW);
@@ -137,4 +137,4 @@ QVector<DEC::dataItem*> DEC::dataItemModel::allRows;
 QVector<DEC::dataItem*> DEC::dataItemModel::newRows;
 s8 DEC::dataItemModel::tpdu[11] = "6000010000";
 u32 DEC::dataItemModel::customerid = CUSTOMER_JL;
-int (*DEC::dataItemModel::decode)(const u8*, u32, MsgJL*)  = ::DecodeJLMsg;
+int (*DEC::dataItemModel::decoder)(const u8*, u32, void*)  = ::DecodeJLMsg;

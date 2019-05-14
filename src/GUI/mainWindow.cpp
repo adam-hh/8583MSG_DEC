@@ -182,7 +182,7 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
         if(NULL != msg8583){
             MsgJL msgjl = {0};
             initConsoleBuf();
-            if(OK == model->decode(msg8583, msg8583Len, &msgjl)){
+            if(OK == model->decoder(msg8583, msg8583Len, &msgjl)){
                 QByteArray tmp = QByteArray::fromRawData((char*)msgjl.MsgLen, sizeof(msgjl.MsgLen)).toHex();
                 ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
                 ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
@@ -260,7 +260,7 @@ int DEC::MainWindow::decodeMsgManual()
     if(NULL != msg8583){
         MsgJL msgjl = {0};
         initConsoleBuf();
-        if(OK == DecodeJLMsg(msg8583, msg8583Len, &msgjl)){
+        if(OK == model->decoder(msg8583, msg8583Len, &msgjl)){
             //QMessageBox::information(this, "Title", "decodeMsgManual sucess.");// decode sucess
             QByteArray tmp = QByteArray::fromRawData((char*)msgjl.MsgLen, sizeof(msgjl.MsgLen)).toHex();
             ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "8583.h"
 
-int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst)
+int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 {
     if(len < 16){
         printConsole("message length too short.\n");
@@ -17,6 +17,7 @@ int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst)
 #define PRINT_NDEF(x) printConsole("fatal error: undefined "); printConsole(#x); printConsole(" found.\n")
 	const u8* curpos = src;
 	int rlt = FAIL;
+	MsgJL* dst = (MsgJL*)dest;
     s8 tmpmsg[MAXMSGSIZE] = {0};
 
     memcpy(dst->MsgLen, curpos, 2); 
@@ -26,17 +27,19 @@ int DecodeJLMsg(const u8 *src, u32 len, MsgJL* dst)
 
     memcpy(dst->MsgTPDU, curpos, 5);
     curpos += 5;MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "MsgTPDU:%.2x%.2x%.2x%.2x%.2x\n", dst->MsgTPDU[0], dst->MsgTPDU[1], dst->MsgTPDU[2], dst->MsgTPDU[3], dst->MsgTPDU[4]);
+	sprintf(tmpmsg, "MsgTPDU:%.2x%.2x%.2x%.2x%.2x\n", 
+		dst->MsgTPDU[0], dst->MsgTPDU[1], dst->MsgTPDU[2], dst->MsgTPDU[3], dst->MsgTPDU[4]);
 	printConsole(tmpmsg);
 
-    memcpy(dst->MsgHead, curpos, 6);
+    memcpy(dst->MsgHead, curpos, 7);
     curpos += 6;MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "MsgHead:%.2x%.2x%.2x%.2x%.2x%.2x\n", dst->MsgHead[0], dst->MsgHead[1], dst->MsgHead[2], dst->MsgHead[3], dst->MsgHead[4], dst->MsgHead[5]);
+	sprintf(tmpmsg, "MsgHead:%.2x%.2x%.2x%.2x%.2x%.2x%.2x\n", 
+		dst->MsgHead[0], dst->MsgHead[1], dst->MsgHead[2], dst->MsgHead[3], dst->MsgHead[4], dst->MsgHead[5], dst->MsgHead[6]);
 	printConsole(tmpmsg);
 
-    memcpy(dst->Field0, curpos, 3);
+    memcpy(dst->Field0, curpos, 2);
     curpos += 3;MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "Field0:%.2x%.2x%.2x\n", dst->Field0[0], dst->Field0[1], dst->Field0[2]);
+	sprintf(tmpmsg, "Field0:%.2x%.2x\n", dst->Field0[0], dst->Field0[1]);
 	printConsole(tmpmsg);
 	
 	dst->Field1 = curpos;
