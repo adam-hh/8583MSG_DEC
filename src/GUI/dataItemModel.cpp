@@ -101,7 +101,7 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     int pos = -1;
     mutex.lock();
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(tpdu, item->data, item->dataLen, &msg8583Len);
+    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
     if(NULL != msg8583){
         MsgJL msgjl = {0};
         initConsoleBuf();
@@ -136,4 +136,5 @@ void DEC::dataItemModel::flushVisibleRows(){
 QVector<DEC::dataItem*> DEC::dataItemModel::allRows;
 QVector<DEC::dataItem*> DEC::dataItemModel::newRows;
 s8 DEC::dataItemModel::tpdu[11] = "6000010000";
+u32 DEC::dataItemModel::customerid = CUSTOMER_JL;
 int (*DEC::dataItemModel::decode)(const u8*, u32, MsgJL*)  = ::DecodeJLMsg;

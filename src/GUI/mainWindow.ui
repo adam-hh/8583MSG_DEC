@@ -192,19 +192,24 @@
              <bool>false</bool>
             </property>
             <property name="currentText">
-             <string>JL</string>
+             <string>JL(嘉联)</string>
             </property>
             <property name="currentIndex">
              <number>0</number>
             </property>
             <item>
              <property name="text">
-              <string>JL</string>
+              <string>JL(嘉联)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>CUP</string>
+              <string>CUP(中国银联)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>YS(银盛)</string>
              </property>
             </item>
            </widget>

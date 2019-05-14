@@ -178,7 +178,7 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
     ui->tableWidget->clearContents();
     if(currentItem != NULL){
         u32 msg8583Len = 0;
-        u8* msg8583 = ::testTPDU(model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
+        u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             MsgJL msgjl = {0};
             initConsoleBuf();
@@ -256,7 +256,7 @@ int DEC::MainWindow::decodeMsgManual()
         return -1;
     }
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(tpdu, msg, len / 2, &msg8583Len);
+    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
         MsgJL msgjl = {0};
         initConsoleBuf();
@@ -328,7 +328,7 @@ int DEC::MainWindow::testTPDU()//test TPDU
         return -1;
     }
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(tpdu, msg, len / 2, &msg8583Len);
+    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
         QMessageBox::information(this, "Title", "test TPDU sucess.");
     }else{
@@ -392,10 +392,26 @@ int DEC::MainWindow::clearTextEdit()//clear
 }
 void DEC::MainWindow::selectDecoder(int index){
     switch(index){
-        case -1: strcpy(model->tpdu, "6000010000");break;
-        case 0: strcpy(model->tpdu, "6000010000");break;
-        case 1: strcpy(model->tpdu, "6000010001");break;
-        default:strcpy(model->tpdu, "6000010000");break;
+        case -1: //JL
+            strcpy(model->tpdu, "6000010000");
+            model->customerid = CUSTOMER_JL;
+            break;
+        case 0: //JL
+            strcpy(model->tpdu, "6000010000");
+            model->customerid = CUSTOMER_JL;
+            break;
+        case 1: //CUP
+            strcpy(model->tpdu, "6000010001");
+            model->customerid = CUSTOMER_CUP;
+            break;
+        case 2: //YS
+            strcpy(model->tpdu, "0001000300");
+            model->customerid = CUSTOMER_YS;
+            break;
+        default: //JL
+            strcpy(model->tpdu, "6000010000");
+            model->customerid = CUSTOMER_JL;
+            break;
     }
 }
 void DEC::MainWindow::showEvent(QShowEvent *event){

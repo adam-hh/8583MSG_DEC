@@ -43,7 +43,7 @@ int main()
     printMem(msg, len);
     u32 tpduLen = 0;
     s8 tpdu[] = "6010000000";
-    if(NULL != testTPDU(tpdu, msg, len, &tpduLen)){
+    if(NULL != testTPDU(CUSTOMER_JL, tpdu, msg, len, &tpduLen)){
         printf("%s test pass, message length is %u\n", tpdu, tpduLen);
     }else{
         printf("%s test failed.\n", tpdu);

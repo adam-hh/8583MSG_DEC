@@ -28,6 +28,11 @@ typedef enum{
 	BCDRALIGN,
 	ASCII
 }DIGITENCODEFORMAT;
+typedef enum{
+	CUSTOMER_JL = 0,
+	CUSTOMER_CUP = 1,
+	CUSTOMER_YS = 2
+}CUSTOMERID;
 
 //JL 8583 message body
 #define F(x) const u8* Field##x; u32 Field##x##_l
@@ -71,7 +76,7 @@ extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT a
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
 //tools
-extern u8* testTPDU(const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
+extern u8* testTPDU(CUSTOMERID cid, const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
 extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);

@@ -249,7 +249,7 @@ int BitMaptest(const int index, const u8 *src, u32 len)
         {return OK;}
 	return FAIL;
 }
-u8* testTPDU(const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
+u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
 {
     if(10 != strlen(tpdu))
         return NULL;
@@ -263,9 +263,23 @@ u8* testTPDU(const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
         memcpy(ufind.tpdu, p, sizeof(ufind.tpdu));
         if(ufind.val == utpdu.val){
             u16 tmplen = 0;
+            u32 rightVCheck = 0;
             toLittleEndian(p-2, 2, &tmplen);
-            *dstLen = 2 + tmplen; //big edian , little edian
-            if((p + tmplen -src) > len) //check right side violation
+            switch(cid){
+                case CUSTOMER_CUP:
+                case CUSTOMER_JL:
+                    *dstLen = 2 + tmplen;
+                    rightVCheck = p + tmplen -src;
+                    break;
+                case CUSTOMER_YS:
+                    *dstLen = tmplen;
+                    rightVCheck = p + tmplen -src - 2;
+                    break;
+                default: return NULL;
+            }
+            //*dstLen = 2 + tmplen; //big edian , little edian
+            //if((p + tmplen -src) > len) //check right side violation
+            if(rightVCheck > len)
                 return NULL;
             if((p - src) >= 2) //check left side violation
                 return p - 2;

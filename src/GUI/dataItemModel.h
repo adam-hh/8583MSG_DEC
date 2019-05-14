@@ -20,6 +20,7 @@ public:
     explicit dataItemModel(QStringList headers, QObject *parent = nullptr);
     ~dataItemModel();
     static s8 tpdu[11];
+    static u32 customerid;
     static int (*decode)(const u8*, u32, MsgJL*);
     //以下为自定义model需要实现的一些虚函数，将会被Qt在查询model数据时调用
     //headerData: 获取表头第section列的数据
