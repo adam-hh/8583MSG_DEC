@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(8583MSG_DEC C CXX)
 
 if(WIN32)
-	set(PRODIR "F:\\DevProjects\\8583MSG_DEC")
-	set(QTDIR "C:\\Qt\\Qt5.12.2")
+	set(PRODIR "E:\\DevProjects\\8583MSG_DEC")
+	set(QTDIR "E:\\Qt\\Qt5.12.2")
 	set(CYGWINDIR "D:\\cygwin64")
 endif()
 
@@ -24,8 +24,7 @@ if(WIN32)
 	set(CMAKE_SH ${CYGWINDIR}/sh.exe)	
 endif()
 # set c/c++ compiler flags for GNU
-# if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-#	set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -Wall -Wno-unknown-pragmas -Wno-sign-compare -Wwrite-strings -Wno-unused")
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
 	set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -Wall")
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_C_FLAGS_RELEASE "-O3")
@@ -34,7 +33,7 @@ endif()
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 #   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-# endif()
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed
@@ -78,10 +77,6 @@ add_library(dumpl SHARED ${dumpSRC})
 add_executable(dec ${decSRC})
 add_executable(dump ${dumpSRC})
 add_executable(gui WIN32 ${GUISRC} ${CMAKE_SOURCE_DIR}/src/project.rc)
-
-# add_library(dumps SHARED ${dumpSRC})
-# target_compile_options(dumps -fPIC) -fPIC don't work
-# target_link_libraries(dumps wpcap.lib)
 
 target_link_libraries(dump wpcap.lib)
 target_link_libraries(dumpl wpcap.lib)

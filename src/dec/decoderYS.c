@@ -23,14 +23,17 @@ int DecodeYSMsg(const u8 *src, u32 len, void* dest)
 
     memcpy(dst->MsgLen, curpos, sizeof(dst->MsgLen)); 
     curpos += sizeof(dst->MsgLen);MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "MsgLen:%.2x%.2x\n", dst->MsgLen[0], dst->MsgLen[1]);
+	printConsole("MsgLen:");
+	printMemS(dst->MsgLen, sizeof(dst->MsgLen), tmpmsg);
 	printConsole(tmpmsg);
+	printConsole("\n");
 
     memcpy(dst->MsgTPDU, curpos, sizeof(dst->MsgTPDU));
     curpos += sizeof(dst->MsgTPDU);MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "MsgTPDU:%.2x%.2x%.2x%.2x%.2x\n", 
-		dst->MsgTPDU[0], dst->MsgTPDU[1], dst->MsgTPDU[2], dst->MsgTPDU[3], dst->MsgTPDU[4]);
+	printConsole("MsgTPDU:");
+	printMemS(dst->MsgTPDU, sizeof(dst->MsgTPDU), tmpmsg);
 	printConsole(tmpmsg);
+	printConsole("\n");
 
     memcpy(dst->MsgHead, curpos, sizeof(dst->MsgHead));
     curpos += sizeof(dst->MsgHead);MEMVIOLATIONCHECK
@@ -41,8 +44,10 @@ int DecodeYSMsg(const u8 *src, u32 len, void* dest)
 
     memcpy(dst->Field0, curpos, sizeof(dst->Field0));
     curpos += sizeof(dst->Field0);MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "Field0:%.2x%.2x\n", dst->Field0[0], dst->Field0[1]);
+	printConsole("Field0:");
+	printMemS(dst->Field0, sizeof(dst->Field0), tmpmsg);
 	printConsole(tmpmsg);
+	printConsole("\n");
 	
 	dst->Field1 = curpos;
     if(*curpos > 0x80){

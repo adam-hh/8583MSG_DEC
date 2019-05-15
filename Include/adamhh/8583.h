@@ -4,6 +4,7 @@ Head file for 8583 project
 ----------------*/
 #ifndef _8583_
 #define _8583_
+#include <ctype.h>
 #include "primitive_type.h"
 
 #ifdef __cplusplus
@@ -132,11 +133,139 @@ extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT a
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
 //tools
-extern const u8* testTPDU(CUSTOMERID cid, const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
-extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
-extern u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
-extern int BitMaptest(const int index, const u8* src, u32 len);
+//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
+static inline const u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
+{
+    if(10 != strlen(tpdu))
+        return NULL;
+    u8 tmp[5];
+    if(!(1 == HexcharStringRevert(tpdu, tmp, 5)))
+        return NULL;
+    TPDUUnion utpdu = {0};
+    memcpy(utpdu.tpdu, tmp, sizeof(utpdu.tpdu));
+    for(const u8* p = src; p != (src + len -5); ++p){
+        TPDUUnion ufind = {0};
+        memcpy(ufind.tpdu, p, sizeof(ufind.tpdu));
+        if(ufind.val == utpdu.val){
+            u16 tmplen = 0;
+            u32 rightVCheck = 0;
+            toLittleEndian(p-2, 2, &tmplen);
+            switch(cid){
+                case CUSTOMER_CUP:
+                case CUSTOMER_JL:
+                    *dstLen = 2 + tmplen;
+                    rightVCheck = p + tmplen -src;
+                    break;
+                case CUSTOMER_YS:
+                    *dstLen = tmplen;
+                    rightVCheck = p + tmplen -src - 2;
+                    break;
+                default: return NULL;
+            }
+            if(rightVCheck > len)
+                return NULL;
+            if((p - src) >= 2) //check left side violation
+                return p - 2;
+        }
+    }
+    return NULL;
+}
+static inline u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag)
+{
+    u32 val = 0;
+    switch(flag){
+        case NOFORMAT:
+        case NOFORMAT_BIGEDIAN:{
+            u32 val = 0;
+            if(len > 4)
+                return 0;
+            u8* p = (u8*)&val;
+            memcpy(p+4-len, src, len);
+            toLittleEndian(&val, sizeof(val), &val);
+            return val;
+        }
+        case NOFORMAT_LITEDIAN:{
+			u32 val = 0;
+            if(len > 4)
+                return 0;
+            u8* p = (u8*)&val;
+            memcpy(p+4-len, src, len);
+            return val;
+        }
+        case BCD:
+        case BCDRALIGN:{
+			s8 bcdEncoded[2 * len + 1];
+			memset(bcdEncoded, 0, 2 * len +1);
+			if(BCDDecode(src, len, bcdEncoded) != 1)
+				return 0;
+			s8 *ptr = bcdEncoded;
+            for(val = 0; isdigit(*ptr); ptr++){//simplified atoi
+                val = 10 * val + (*ptr - 0x30);
+            }
+			return val;
+        }
+        case BCDLALIGN:
+            printConsole("BCD digit left align is not supported.\n");
+            return 0;
+        case ASCII:{
+            const u8* p = src;
+            for(val = 0; p != (src + len); p++){
+                if(isdigit(*p))
+                    val = 10 * val + (*p - 0x30);
+                else
+                    return 0;
+            }
+            return val;
+        }
+        default:
+            printConsole("illegal digit encode format specified.\n");
+            return 0;
+    }
+}
+static inline u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag){
+    u32 rlt = calLenField(src, len, flag);
+    if(!rlt)
+        return rlt;
+    if((rlt % 2) == 1){
+        return (rlt + 1) / 2;
+    }else{
+        return rlt / 2;
+    }
+}
+/*-----------------------------
+src is the bitmap, index is the target to be tested.
+-----------------------------*/
+static inline int BitMaptest(const int index, const u8 *src, u32 len)
+{
+	if((index < 1) || (index > (8*len)))
+		{
+            s8 tmpmsg[TMPMSGSIZE] = {0};
+			sprintf(tmpmsg, "ivalid index %d or bitmap length %u \n", index, len);
+            printConsole(tmpmsg);
+			return FATAL_ERROR;
+		}
+	int mod = index % 8;
+	u8 chr = 0x0;
+	switch(mod)
+	{
+		case 1: chr = 0x80;break;
+		case 2: chr = 0x40;break;
+		case 3: chr = 0x20;break;
+		case 4: chr = 0x10;break;
+		case 5: chr = 0x8;break;
+		case 6: chr = 0x4;break;
+		case 7: chr = 0x2;break;
+		case 0: chr = 0x1;break;
+		default:
+            printConsole("bitmap index error \n"); 
+            return FATAL_ERROR;
+	}
+	u32 i = ((index -1) / 8);
+    if(chr & *(src + i))
+        {return OK;}
+	return FAIL;
+}
 extern void printMem(const u8*, u32);//format mem to stdout
 static inline void printMemS(const u8* src, u32 len, s8* dst) //format mem to dst
 {
