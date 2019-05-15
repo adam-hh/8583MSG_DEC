@@ -101,7 +101,7 @@ int DEC::dataItemModel::appendItem(tcpDataBlock* item){
     int pos = -1;
     mutex.lock();
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
+    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
     if(NULL != msg8583){
         //MsgJL msgjl = {0};
         initConsoleBuf();

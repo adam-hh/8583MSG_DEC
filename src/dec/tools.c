@@ -175,19 +175,6 @@ void printMem(const u8* src, u32 len)
     if((i+1) % 16 != 0)
         printf("\n");
 }
-void printMemS(const u8* src, u32 len, s8* dst)
-{
-    if( len > (MAXMSGSIZE / 2)){
-        printConsole("dst too short.\n");
-        memset(dst, 0, strlen(dst));
-        return;
-    }
-    int i;
-    for(i=0; i< len; i++){
-        sprintf(dst,"%.2x", *src++);
-        dst += 2;
-    }
-}
 
 /*-----------------------------
 Test the bitmap(*src), if the index sequnce of bit in memory *src matched 1, test sucess.
@@ -223,7 +210,7 @@ int BitMaptest(const int index, const u8 *src, u32 len)
         {return OK;}
 	return FAIL;
 }
-u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
+const u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
 {
     if(10 != strlen(tpdu))
         return NULL;

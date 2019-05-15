@@ -294,7 +294,7 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
     ui->tableWidget->clearContents();
     if(currentItem != NULL){
         u32 msg8583Len = 0;
-        u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
+        const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             if(OK == model->decoder(msg8583, msg8583Len, model->ptr2)){
                 fillTable(model->ptr2);
@@ -337,7 +337,7 @@ int DEC::MainWindow::decodeMsgManual()
         return -1;
     }
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
+    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
         initConsoleBuf();
         if(OK == model->decoder(msg8583, msg8583Len, model->ptr2)){
@@ -375,7 +375,7 @@ int DEC::MainWindow::testTPDU()//test TPDU
         return -1;
     }
     u32 msg8583Len = 0;
-    u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
+    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
         QMessageBox::information(this, "Title", "test TPDU sucess.");
     }else{
@@ -463,9 +463,9 @@ void DEC::MainWindow::selectDecoder(int index){
             model->customerid = CUSTOMER_CUP;
             break;
         case 2: //YS
-            strcpy(model->tpdu, "0001000300");
+            strcpy(model->tpdu, "6000580000");
             model->customerid = CUSTOMER_YS;
-            //model->decoder = DecodeYSMsg;
+            model->decoder = DecodeYSMsg;
             free(model->ptr1);
             free(model->ptr2);
             model->ptr1 = (void*)malloc(sizeof(MsgYS));

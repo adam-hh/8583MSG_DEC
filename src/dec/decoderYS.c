@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "8583.h"
 
-int DecodeJLMsg(const u8 *src, u32 len, void* dest)
+int DecodeYSMsg(const u8 *src, u32 len, void* dest)
 {
     if(len < 16){
         printConsole("message length too short.\n");
@@ -17,29 +17,30 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 #define PRINT_NDEF(x) printConsole("fatal error: undefined "); printConsole(#x); printConsole(" found.\n"); return FAIL;
 	const u8* curpos = src;
 	int rlt = FAIL;
-	MsgJL* dst = (MsgJL*)dest;
-	memset(dst, 0, sizeof(MsgJL));
+	MsgYS* dst = (MsgYS*)dest;
+	memset(dst, 0, sizeof(MsgYS));
     s8 tmpmsg[MAXMSGSIZE] = {0};
 
-    memcpy(dst->MsgLen, curpos, 2); 
-    curpos += 2;MEMVIOLATIONCHECK
+    memcpy(dst->MsgLen, curpos, sizeof(dst->MsgLen)); 
+    curpos += sizeof(dst->MsgLen);MEMVIOLATIONCHECK
 	sprintf(tmpmsg, "MsgLen:%.2x%.2x\n", dst->MsgLen[0], dst->MsgLen[1]);
 	printConsole(tmpmsg);
 
-    memcpy(dst->MsgTPDU, curpos, 5);
-    curpos += 5;MEMVIOLATIONCHECK
+    memcpy(dst->MsgTPDU, curpos, sizeof(dst->MsgTPDU));
+    curpos += sizeof(dst->MsgTPDU);MEMVIOLATIONCHECK
 	sprintf(tmpmsg, "MsgTPDU:%.2x%.2x%.2x%.2x%.2x\n", 
 		dst->MsgTPDU[0], dst->MsgTPDU[1], dst->MsgTPDU[2], dst->MsgTPDU[3], dst->MsgTPDU[4]);
 	printConsole(tmpmsg);
 
-    memcpy(dst->MsgHead, curpos, 7);
-    curpos += 7;MEMVIOLATIONCHECK
-	sprintf(tmpmsg, "MsgHead:%.2x%.2x%.2x%.2x%.2x%.2x%.2x\n", 
-		dst->MsgHead[0], dst->MsgHead[1], dst->MsgHead[2], dst->MsgHead[3], dst->MsgHead[4], dst->MsgHead[5], dst->MsgHead[6]);
+    memcpy(dst->MsgHead, curpos, sizeof(dst->MsgHead));
+    curpos += sizeof(dst->MsgHead);MEMVIOLATIONCHECK
+	printConsole("Msghead:");
+	printMemS(dst->MsgHead, sizeof(dst->MsgHead), tmpmsg);
 	printConsole(tmpmsg);
+	printConsole("\n");
 
-    memcpy(dst->Field0, curpos, 2);
-    curpos += 2;MEMVIOLATIONCHECK
+    memcpy(dst->Field0, curpos, sizeof(dst->Field0));
+    curpos += sizeof(dst->Field0);MEMVIOLATIONCHECK
 	sprintf(tmpmsg, "Field0:%.2x%.2x\n", dst->Field0[0], dst->Field0[1]);
 	printConsole(tmpmsg);
 	
@@ -86,34 +87,12 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_F(Field4);
 	}else{
 		PRINT_E(Field4);
-	}
-    
-	rlt = TEST(5); //Field5
-	if(OK == rlt){
-		dst->Field5 = curpos;
-		curpos += (dst->Field5_l = 16);MEMVIOLATIONCHECK
-		PRINT(Field5);
-	}
-	else if(FAIL == rlt){
-		PRINT_F(Field5);
-	}else{
-		PRINT_E(Field5);
-	}
+	}	
 
-	rlt = TEST(6); //Field6
-	if(OK == rlt){
-		dst->Field6 = curpos;
-		curpos += (dst->Field6_l = 4);MEMVIOLATIONCHECK
-		PRINT(Field6);
-	}else if(FAIL == rlt){
-		PRINT_F(Field6);
-	}else{
-		PRINT_E(Field6);
-	}
-
-	if(TEST(7) || TEST(8) || TEST(9) ||TEST(10)){ //Field7,8,9,10 undefined.
-		PRINT_NDEF(Field7_8_9_10);
-	}
+	if(TEST(5) || TEST(6) || TEST(7) || TEST(8) || TEST(9) ||TEST(10)) //Field5,6,7,8,9,10 undefined.
+		{
+			PRINT_NDEF(Field5_6_7_8_9_10);
+		}
 	
 	rlt = TEST(11); //Field11
 	if(OK == rlt){
@@ -170,9 +149,10 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field15);
 	}
 
-	if(TEST(16) || TEST(17) || TEST(18) || TEST(19) || TEST(20) || TEST(21)){ //Field16,17,18,19,20,21 are not defined.
-		PRINT_NDEF(Field16_17_18_19_20_21);
-	}
+	if(TEST(16) || TEST(17) || TEST(18) || TEST(19) || TEST(20) || TEST(21)) //Field16,17,18,19,20,21 are not defined.
+		{
+			PRINT_NDEF(Field16_17_18_19_20_21);
+		}
 
 	rlt = TEST(22);  //Field22
 	if(OK == rlt){
@@ -196,9 +176,9 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field23);
 	}
 
-	if(TEST(24)){ //Field24 is not defined.
-		PRINT_NDEF(Field24);
-	}
+	if(TEST(24)){//Field24 is not defined.
+			PRINT_NDEF(Field24);
+		}
 
 	rlt = TEST(25);  //Field25
 	if(OK == rlt){
@@ -222,8 +202,19 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field26);
 	}
 
-	if(TEST(27) || TEST(28) || TEST(29) || TEST(30) || TEST(31)){ //Field27,28,29,30,31 are not defined.
-		PRINT_NDEF(Field27_28_29_30_31);
+	if(TEST(27) || TEST(28) || TEST(29) || TEST(30)){ //Field27,28,29,30 are not defined.
+		PRINT_NDEF(Field27_28_29_30);
+	}
+
+	rlt = TEST(31); //Field31
+	if(OK == rlt){
+		dst->Field31 = curpos;
+		curpos += (dst->Field31_l = 10);MEMVIOLATIONCHECK
+		PRINT(Field31);
+	}else if(FAIL == rlt){
+		PRINT_F(Field31);
+	}else{
+		PRINT_E(Field31);
 	}
 
 	rlt = TEST(32);  //Field32
@@ -238,8 +229,20 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field32);
 	}
 
-	if(TEST(33) || TEST(34)){ //Field33,34 are not defined.
+	if(TEST(33)){ //Field33 is not defined.
 		PRINT_NDEF(Field33_34);
+	}
+
+	rlt = TEST(34); //Field34
+	if(OK == rlt){
+		dst->Field34 = curpos;
+		dst->Field34_l = 2 + calLenField(curpos, 1, BCD);
+		curpos += dst->Field34_l;MEMVIOLATIONCHECK
+		PRINT(Field34);
+	}else if(FAIL == rlt){
+		PRINT_F(Field34);
+	}else{
+		PRINT_E(Field34);
 	}
 
 	rlt = TEST(35); //Field35
@@ -299,7 +302,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field39);
 	}
 
-	if(TEST(40)){ //Field40 is not defined.
+	if(TEST(40)){ //Field40 is not defined.		
 		PRINT_NDEF(Field40);
 	}
 
@@ -341,33 +344,9 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field44);
 	}
 
-	if(TEST(45)){ // Field45 is not defined.
-		PRINT_NDEF(Field45);
-	}
-	
-	rlt = TEST(46); // Field 46 XGD 
-	if(OK == rlt){
-		dst->Field46 = curpos;
-		dst->Field46_l = 2 + calLenField(curpos, 2, BCD);
-		curpos += (dst->Field46_l);MEMVIOLATIONCHECK
-		PRINT(Field46);
-	}else if(FAIL == rlt){
-		PRINT_F(Field46);
-	}else{
-		PRINT_E(Field46);
-	}
-
-	rlt = TEST(47); // Field47
-	if(OK == rlt){
-		dst->Field47 = curpos;
-		dst->Field47_l = 2 + calLenField(curpos, 2, BCD);
-		curpos += (dst->Field47_l);MEMVIOLATIONCHECK
-		PRINT(Field47);
-	}else if(FAIL == rlt){
-		PRINT_F(Field47);
-	}else{
-		PRINT_E(Field47);
-	}
+	if(TEST(45) || TEST(46) || TEST(47)){ // Field45,46,47 is not defined.		
+		PRINT_NDEF(Field45_46_47);
+	}	
 
 	rlt = TEST(48); //Field 48
 	if(OK == rlt){
@@ -404,7 +383,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field50);
 	}
 
-	if(TEST(51)){ // Field 51 is not defined.
+	if(TEST(51)){ // Field 51 is not defined.		
 		PRINT_NDEF(Field51);
 	}
 
@@ -466,7 +445,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field56);
 	}
 
-	if(TEST(57)){ // Field 57 is not defined.
+	if(TEST(57)){ // Field 57 is not defined.		
 		PRINT_NDEF(Field57);
 	}
 
@@ -488,8 +467,8 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		dst->Field59_l = 2 + calLenField(curpos, 2, BCD);
 		curpos += (dst->Field59_l);MEMVIOLATIONCHECK
 		PRINT(Field59);
-	}else if(FAIL == rlt)	{
-		PRINT_F(Field59);
+	}else if(FAIL == rlt){
+			PRINT_F(Field59);
 	}else{
 		PRINT_E(Field59);
 	}
@@ -542,7 +521,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 		PRINT_E(Field63);
 	}
 
-	rlt = TEST(64);
+	rlt = TEST(64); //Field 64
 	if(OK == rlt){
 		dst->Field64 = curpos;
 		curpos += (dst->Field64_l = 8);MEMVIOLATIONCHECK

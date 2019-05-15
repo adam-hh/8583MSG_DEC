@@ -78,7 +78,7 @@ typedef struct{
 extern ConsoleBuf consolebuffer;
 extern int initConsoleBuf();
 extern int clearConsoleBuf();
-static inline int printConsole(s8* str)
+static inline int printConsole(const s8* str)
 {
     if(strlen(str) >= CONSOLEBUFSIZE)
         return -1;
@@ -94,6 +94,7 @@ static inline int printConsole(s8* str)
 
 //Decode engine
 extern int DecodeJLMsg(const u8 *src, u32 len, void* dst);
+extern int DecodeYSMsg(const u8 *src, u32 len, void* dst);
 
 //basic tools
 static inline u8 xtoi(u8 chr){//chr is [0-9A-Za-z], return [0x0-0xF]
@@ -131,13 +132,24 @@ extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT a
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
 //tools
-extern u8* testTPDU(CUSTOMERID cid, const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
+extern const u8* testTPDU(CUSTOMERID cid, const s8 *TPDU , const u8 *src, u32 len, u32 *dstLen);//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
 extern u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag);
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
-extern void printMem(const u8*, u32);//print to
-extern void printMemS(const u8* src, u32 len, s8* dst);//print to consolebuffer
 extern int BitMaptest(const int index, const u8* src, u32 len);
+extern void printMem(const u8*, u32);//format mem to stdout
+static inline void printMemS(const u8* src, u32 len, s8* dst) //format mem to dst
+{
+    if( len > (MAXMSGSIZE / 2)){
+        printConsole("dst too short.\n");
+        memset(dst, 0, strlen(dst));
+        return;
+    }
+    for(const u8* p = src; p - src != len; p++){
+        sprintf(dst,"%.2x", *p);
+        dst += 2;
+    }
+}
 
 #ifdef __cplusplus
 }
