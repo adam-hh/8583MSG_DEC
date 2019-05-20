@@ -1,7 +1,7 @@
-/*--------------
-Author Huhui(Adam)
-Head file for 8583 project
-----------------*/
+/*
+ *Author Huhui(Adam)
+ *Head file for 8583 project
+ */
 #ifndef _8583_
 #define _8583_
 #include <ctype.h>
@@ -51,7 +51,7 @@ typedef struct{
 	F(51);F(52);F(53);F(54);F(55);F(56);F(57);F(58);F(59);F(60);
 	F(61);F(62);F(63);F(64);
 }MsgJL;
-//YS
+//YS 8583 message body
 typedef struct{
 	u8 MsgLen[2];
 	u8 MsgTPDU[5];
@@ -66,6 +66,7 @@ typedef struct{
 	F(61);F(62);F(63);F(64);
 }MsgYS;
 #undef F
+//Union of TPDU, for data align usage
 typedef union{
 	u64 val;
 	u8 tpdu[5];
@@ -98,7 +99,11 @@ extern int DecodeJLMsg(const u8 *src, u32 len, void* dst);
 extern int DecodeYSMsg(const u8 *src, u32 len, void* dst);
 
 //basic tools
-static inline u8 xtoi(u8 chr){//chr is [0-9A-Za-z], return [0x0-0xF]
+/*
+ *hex char to int, chr is [0-9A-Za-z], return [0x0-0xF]
+ */
+static inline u8 xtoi(u8 chr)
+{
     switch(chr){
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
             return chr - 0x30;
@@ -109,7 +114,11 @@ static inline u8 xtoi(u8 chr){//chr is [0-9A-Za-z], return [0x0-0xF]
         default: return 0;
     }
 }
-static inline void* toLittleEndian(const void* src, size_t len, void* dst){//reverse the src, src and dst can be equal
+/*
+ *reverse the byte sequnce in src.
+ */
+static inline void* toLittleEndian(const void* src, size_t len, void* dst)
+{
 	u8* chrsrc = (u8*)src;
     u8* chrdst = (u8*)dst + len -1;
     if(src != dst){
@@ -126,15 +135,37 @@ static inline void* toLittleEndian(const void* src, size_t len, void* dst){//rev
 	}
 	return dst;
 }
-static inline void* toBigEndian(const void* src, size_t len, void* dst){//the same with toLittleEndian
+static inline void* toBigEndian(const void* src, size_t len, void* dst)
+{
 	return toLittleEndian(src, len, dst);
 }
 extern int BCDEncode(const char* src, size_t len, void* dst, DIGITENCODEFORMAT align); 
 extern int BCDDecode(const void* src, size_t len, char* dst);
 
 //tools
+extern void printMem(const u8*, u32);//format mem to stdout
+static inline void printMemS(const u8* src, u32 len, s8* dst) //format mem to dst
+{
+    if( len > (MAXMSGSIZE / 2)){
+        printConsole("dst too short.\n");
+        memset(dst, 0, strlen(dst));
+        return;
+    }
+    for(const u8* p = src; p - src != len; p++){
+        sprintf(dst,"%.2x", *p);
+        dst += 2;
+    }
+}
 extern int HexcharStringRevert(const s8* src, u8* dst, u32 len);
-//the TPDU block's address returned, dstLen is a output parameter of the TPDU block's length
+/*
+ *description: test if a tpdu string exist in a message body.
+ *parameter input cid: CUSTOMERID
+ *parameter input tpdu: tpdu string
+ *parameter input src: memory block to be tested.
+ *parameter input len: memory block length.
+ *parameter output dstLen: TPDU memory block length
+ *return: TPDU memory block's address
+ */
 static inline const u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, u32 len, u32 *dstLen)
 {
     if(10 != strlen(tpdu))
@@ -163,7 +194,7 @@ static inline const u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, 
                     break;
                 default: return NULL;
             }
-            if(rightVCheck > len)
+            if(rightVCheck > len) //check right side violation
                 return NULL;
             if((p - src) >= 2) //check left side violation
                 return p - 2;
@@ -171,6 +202,10 @@ static inline const u8* testTPDU(CUSTOMERID cid, const s8 *tpdu, const u8 *src, 
     }
     return NULL;
 }
+/*
+ *calculate the length value of a field.
+ *note: accuracy may overflow from unsigned int
+ */
 static inline u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag)
 {
     u32 val = 0;
@@ -223,7 +258,11 @@ static inline u32 calLenField(const u8* src, u32 len, DIGITENCODEFORMAT flag)
             return 0;
     }
 }
-static inline u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag){
+/*
+ *some special length field need to be cut and align.
+ */
+static inline u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCODEFORMAT flag)
+{
     u32 rlt = calLenField(src, len, flag);
     if(!rlt)
         return rlt;
@@ -233,9 +272,9 @@ static inline u32 calLenFieldOfCompressedAlign(const u8* src, u32 len, DIGITENCO
         return rlt / 2;
     }
 }
-/*-----------------------------
-src is the bitmap, index is the target to be tested.
------------------------------*/
+/*
+ *src is the bitmap, index is the target to be tested.
+ */
 static inline int BitMaptest(const int index, const u8 *src, u32 len)
 {
 	if((index < 1) || (index > (8*len)))
@@ -266,22 +305,76 @@ static inline int BitMaptest(const int index, const u8 *src, u32 len)
         {return OK;}
 	return FAIL;
 }
-extern void printMem(const u8*, u32);//format mem to stdout
-static inline void printMemS(const u8* src, u32 len, s8* dst) //format mem to dst
+typedef enum{//work with msgScan func
+	L_FIXED,//fixed length
+	L_BCD,//normal BCD encoded length
+	L_BCD_COMPRESS_ALIGN,//BCD encoded but compressed and aligned
+	L_UNDEFINE//undefine field
+}LENGTHFIELDFLAG;
+/*
+ *description:scan a field specified by an index number
+ *parameter output fld: field address 
+ *parameter input fldname: field name
+ *parameter output fldlen: field length
+ *parameter input bmp: bitmap address
+ *parameter input bmplen: bitmap length
+ *parameter input idx: index
+ *parameter input and output cur: cursor pointer
+ *parameter input flen: field length
+ *parameter input flag: a flag
+ *return: the result
+ */
+static inline int msgScan(const u8 **fld, const s8 *fldname, u32 *fldlen, const u8 *bmp, u32 bmplen, 
+		int idx, const u8 **cur, u32 flen, LENGTHFIELDFLAG flag)
 {
-    if( len > (MAXMSGSIZE / 2)){
-        printConsole("dst too short.\n");
-        memset(dst, 0, strlen(dst));
-        return;
-    }
-    for(const u8* p = src; p - src != len; p++){
-        sprintf(dst,"%.2x", *p);
-        dst += 2;
-    }
+	int rlt = BitMaptest(idx, bmp, bmplen);
+	s8 tmpmsg[MAXMSGSIZE] = {0};
+	s8 tmp[MAXMSGSIZE] = {0};
+	if(OK == rlt){
+		*fld = *cur;
+		switch(flag){
+			case L_FIXED:{
+				*fldlen = flen;
+				*cur += *fldlen;
+				break;
+			}
+			case L_BCD:{
+				*fldlen = flen + calLenField(*fld, flen, BCD);
+				*cur += *fldlen;
+				break;
+			}
+			case L_BCD_COMPRESS_ALIGN:{
+				*fldlen = flen + calLenFieldOfCompressedAlign(*fld, flen, BCD);
+				*cur += *fldlen;
+				break;
+			}
+			case L_UNDEFINE:{
+				sprintf(tmp, "fatal error: undefined %s found.\n", fldname);
+				printConsole(tmp);
+				return FATAL_ERROR;
+			}
+			default:{
+				sprintf(tmp, "fatal error(unknow) when processing %s.\n", fldname);
+				printConsole(tmp);
+				return FATAL_ERROR;
+			}
+		}
+		printMemS(*fld, *fldlen, tmpmsg);
+		sprintf(tmp, "%s:%s\n", fldname, tmpmsg);
+		printConsole(tmp);
+		return OK;
+	}else if(FAIL == rlt){
+		sprintf(tmp, "%s: not exist.\n", fldname);
+		printConsole(tmp);
+		return FAIL;
+	}else{
+		sprintf(tmp, "fatal error(unknow) when processing %s.\n", fldname);
+		printConsole(tmp);
+		return FATAL_ERROR;
+	}
 }
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif
