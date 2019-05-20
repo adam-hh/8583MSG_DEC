@@ -27,7 +27,7 @@ int DecodeJLMsg(const u8 *src, u32 len, void* dest)
 	MsgJL* dst = (MsgJL*)dest; //cast
 	memset(dst, 0, sizeof(MsgJL)); //set 0
     s8 tmpmsg[MAXMSGSIZE] = {0}; //used to format a field data to hex string
-	s8 tmp[MAXMSGSIZE] = {0}; //used to format a whole message string
+	s8 tmp[MAXMSGSIZE + TMPMSGSIZE] = {0}; //used to format a whole message string
 
     memcpy(dst->MsgLen, curpos, sizeof(dst->MsgLen)); 
     curpos += sizeof(dst->MsgLen);

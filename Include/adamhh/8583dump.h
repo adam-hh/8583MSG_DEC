@@ -1,4 +1,5 @@
-/*Author: adamH.H Contact:409520259@qq.com
+/*
+ *Author: adamH.H Contact:409520259@qq.com
  *Date:2019.4.3
  *Description:
  *This header file used for:

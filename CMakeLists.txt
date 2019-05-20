@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(8583MSG_DEC C CXX)
 
 if(WIN32)
-	set(PRODIR "F:\\DevProjects\\8583MSG_DEC")
-	set(QTDIR "C:\\Qt\\Qt5.12.2")
+	set(PRODIR "E:\\DevProjects\\8583MSG_DEC")
+	set(QTDIR "E:\\Qt\\Qt5.12.2")
 	set(CYGWINDIR "D:\\cygwin64")
 endif()
 
