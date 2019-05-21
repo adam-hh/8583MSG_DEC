@@ -21,7 +21,7 @@ int main()
     u8 data[18] = {0};
     clearConsoleBuf();
     HexcharStringRevert("010203040506010203040506010203040506", data, 18);
-    printMem(data, 18);
+    PrintMem(data, 18);
     u8 dd[] = {0x31, 0x32, 0x33, 0x34};
     printf("Length 4, noformat:%u\n", calLenField(dd, 4, NOFORMAT));
     printf("Length 3, noformat:%u\n", calLenField(dd, 3, NOFORMAT));
@@ -40,10 +40,10 @@ int main()
     u32 len = (sizeof(MsgDef) -1) / 2;
     u8* msg = (u8*)malloc(len);
     HexcharStringRevert(MsgDef, msg, len);
-    printMem(msg, len);
+    PrintMem(msg, len);
     u32 tpduLen = 0;
     s8 tpdu[] = "6010000000";
-    if(NULL != testTPDU(CUSTOMER_JL, tpdu, msg, len, &tpduLen)){
+    if(NULL != TestTPDU(CUSTOMER_JL, tpdu, msg, len, &tpduLen)){
         printf("%s test pass, message length is %u\n", tpdu, tpduLen);
     }else{
         printf("%s test failed.\n", tpdu);
@@ -52,7 +52,7 @@ int main()
     MsgJL jl = {0};
     if(OK == DecodeJLMsg(msg, len, &jl)){
         printf("DecodeJLMsg sucess.\n");
-        printf("%s", consolebuffer.buf);
+        printf("%s", ConsoleBuffer.buf);
     }
     free(msg);
 }

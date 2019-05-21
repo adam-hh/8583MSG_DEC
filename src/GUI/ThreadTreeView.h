@@ -15,16 +15,16 @@ public:
 
 public slots:
     void startCapture(){
-        for(QVector<tcpDataBlock*>::iterator it = vec.begin(); it != vec.end(); it++){
+        for(QVector<TcpDataBlock*>::iterator it = vec.begin(); it != vec.end(); it++){
             free((*it)->data);
         }
         qDeleteAll(vec);
-        QVector<tcpDataBlock*>().swap(vec); //empty vec
+        QVector<TcpDataBlock*>().swap(vec); //empty vec
         int rlt = 0;
         model->resetModel();
         while(true){
-            tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
-            rlt = readFromUserBuff(usbf, b);
+            TcpDataBlock *b = (TcpDataBlock*)malloc(sizeof(TcpDataBlock));
+            rlt = ReadFromUserBuff(Usbf, b);
             if(1 == rlt){
                 DEC::vec.append(b);
                 if(model->appendItem(b) != model->rowCount())

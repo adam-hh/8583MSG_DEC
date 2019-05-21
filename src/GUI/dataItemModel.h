@@ -44,7 +44,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     DEC::dataItem *itemFromIndex(const QModelIndex &index) const;
     void resetModel();
-    int appendItem(tcpDataBlock* item);
+    int appendItem(TcpDataBlock* item);
 public slots:
     void flushVisibleRows();
 private:

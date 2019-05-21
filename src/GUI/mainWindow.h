@@ -24,7 +24,7 @@ namespace Ui {
 }
 namespace DEC {
 extern QMutex mutex;
-extern QVector<tcpDataBlock*> vec;
+extern QVector<TcpDataBlock*> vec;
 class interfaceDialog;
 class MainWindow : public QMainWindow{
     Q_OBJECT

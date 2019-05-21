@@ -39,21 +39,21 @@ void DEC::interfaceDialog::accept()
         return;
     }
     // Jump to the selected adapter
-	for (p=alldevs, i=0; i<in ;p=p->next, i++);
+    for (p=alldevs, i=0; i<in ;p=p->next, i++);
     // Open the selected adapter
     if ((PHandle.handle = pcap_open_live(p->name,	// name of the device
-		65536,							// portion of the packet to capture. 
-										// 65536 grants that the whole packet will be captured on all the MACs.
-		1,								// promiscuous mode (nonzero means promiscuous)
-		1000,							// read timeout
-		errbuf							// error buffer
-		)) == NULL){
-		fprintf(stderr,"\nError opening adapter\n");
+        65536,                          // portion of the packet to capture.
+                                        // 65536 grants that the whole packet will be captured on all the MACs.
+        1,                              // promiscuous mode (nonzero means promiscuous)
+        1000,                           // read timeout
+        errbuf                          // error buffer
+        )) == NULL){
+        fprintf(stderr,"\nError opening adapter\n");
         QMessageBox::information(this, "Title", "Error opening adapter.");
         thisParent->setPbt(false);
         PHandle.avaliable = -1;
-		return;
-	}
+        return;
+    }
     PHandle.avaliable = 1;
     this->setVisible(false);
     thisParent->setPbt(true);
@@ -72,13 +72,13 @@ int DEC::interfaceDialog::scanDev()
 {
     pcap_if_t *p;
     #ifdef WIN32
-	// Load Npcap and its functions.
-	if (!LoadNpcapDll())
-	{
-	    fprintf(stderr, "Couldn't load Npcap\n");
-	    return -1;
-	}
-	#endif
+    // Load Npcap and its functions.
+    if (!LoadNpcapDll())
+    {
+        fprintf(stderr, "Couldn't load Npcap\n");
+        return -1;
+    }
+    #endif
     char errbuf[PCAP_ERRBUF_SIZE + 1];
     if(pcap_findalldevs(&alldevs, errbuf) == -1)
     {

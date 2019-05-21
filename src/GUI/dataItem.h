@@ -13,27 +13,27 @@ typedef enum{
     WHITE,
     GREEN,
     YELLOW
-}DECCOLOR;
+}DecColor;
 class dataItem{
 public:
-    explicit dataItem(tcpDataBlock* data = nullptr, int rowNum = 0, int color = GRAY);
+    explicit dataItem(TcpDataBlock* data = nullptr, int rowNum = 0, int color = GRAY);
     ~dataItem();
 
-    tcpDataBlock* tcpData(){return fdata;}
+    TcpDataBlock* tcpData(){return fdata;}
     void setRow(int row){
         rowNum = row;
     }
     int getRow(){
         return rowNum;
     }
-    void setColor(DECCOLOR clr){
+    void setColor(DecColor clr){
         color = clr;
     }
     int getColor(){
         return color;
     }
 private:
-    tcpDataBlock* fdata;//raw data source
+    TcpDataBlock* fdata;//raw data source
     int rowNum;//row number
     int color;//background color
 };

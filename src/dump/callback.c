@@ -11,56 +11,56 @@
 	const u_char *);
  *user* passed to u_char*, pcap_pkthdr* point to the current pcap_pkthdr, u_char*  point to the data memory first byte address
  */
-int loop(int cnt, pcap_handler callback)
-{	
+int Loop(int cnt, pcap_handler callback)
+{
     if((PHandle.handle == NULL) || (PHandle.avaliable == -1))
-		{
-			printf("PHandle is not a live handle.\n");
-			return -1;
-		}
-	return pcap_loop(PHandle.handle, cnt, callback, (u8*)usbf);
+        {
+            printf("PHandle is not a live handle.\n");
+            return -1;
+        }
+    return pcap_loop(PHandle.handle, cnt, callback, (u8*)Usbf);
 }
 
-void callbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data)
+void CallbackPrintNextPackage(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data)
 {
     struct tm *ltime;
-	char timestr[16];
-	time_t local_tv_sec;
+    char timestr[16];
+    time_t local_tv_sec;
 
-	/* convert the timestamp to readable format */
-	local_tv_sec = header->ts.tv_sec;
-	ltime=localtime(&local_tv_sec);
-	strftime( timestr, sizeof timestr, "%H:%M:%S", ltime);
-	/* print pkt timestamp and pkt len */
-	printf("%s,%.6ld len:%d\n", timestr, header->ts.tv_usec, header->len);
+    /* convert the timestamp to readable format */
+    local_tv_sec = header->ts.tv_sec;
+    ltime=localtime(&local_tv_sec);
+    strftime( timestr, sizeof timestr, "%H:%M:%S", ltime);
+    /* print pkt timestamp and pkt len */
+    printf("%s,%.6ld len:%d\n", timestr, header->ts.tv_usec, header->len);
     /* Print the packet */
-	for (int i=1; (i < header->caplen + 1 ) ; i++)
-	{
-		printf("%.2x ", pkt_data[i-1]);
-		if ( (i % LINE_LEN) == 0) printf("\n");
-	}		
-	printf("\n\n");	
+    for (int i=1; (i < header->caplen + 1 ) ; i++)
+    {
+        printf("%.2x ", pkt_data[i-1]);
+        if ( (i % LINE_LEN) == 0) printf("\n");
+    }
+    printf("\n\n");	
 }
 
-void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data)
+void CallbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *pkt_data)
 {
-	tcpDataBlock tb = {0};
-	struct tm *ltime;
-	char timestr[16];
-	time_t local_tv_sec;
+    TcpDataBlock tb = {0};
+    struct tm *ltime;
+    char timestr[16];
+    time_t local_tv_sec;
 
-	/* convert the timestamp to readable format */
-	local_tv_sec = header->ts.tv_sec;
-	ltime=localtime(&local_tv_sec);
-	strftime( timestr, sizeof timestr, "%H:%M:%S", ltime);
-	/* print pkt timestamp and pkt len */
-	//sprintf(tb.extraInfo, "%s,%.6ld len:%d", timestr, header->ts.tv_usec, header->len);
-	sprintf(tb.timestr, "%s", timestr);
-	tb.tv_usec = header->ts.tv_usec;
-	tb.totallen = header->len;
+    /* convert the timestamp to readable format */
+    local_tv_sec = header->ts.tv_sec;
+    ltime=localtime(&local_tv_sec);
+    strftime( timestr, sizeof timestr, "%H:%M:%S", ltime);
+    /* print pkt timestamp and pkt len */
+    //sprintf(tb.extraInfo, "%s,%.6ld len:%d", timestr, header->ts.tv_usec, header->len);
+    sprintf(tb.timestr, "%s", timestr);
+    tb.tv_usec = header->ts.tv_usec;
+    tb.totallen = header->len;
 
-	
-	IP_HEADER *ih;
+
+    IP_HEADER *ih;
     TCP_HEADER *tcph;
     ih = (IP_HEADER *) (pkt_data + sizeof(ETH_HEADER));
     int ip_len = (ih->ver_iphl & 0xF) * 4;
@@ -70,16 +70,14 @@ void callbackWriteToBuff(u8 *param, const struct pcap_pkthdr *header, const u8 *
     sport = ((sport & 0x00FF) << 8) + ((sport & 0xFF00) >> 8); 
     dport = ((dport & 0x00FF) << 8) + ((dport & 0xFF00) >> 8);
 
-	tb.ipSrc = ih->ip_src;
-	tb.ipDst = ih->ip_dst;
-	tb.portSrc = sport;
-	tb.portDst = dport;
-	tb.data = pkt_data;
-	tb.dataLen = header->caplen;
+    tb.ipSrc = ih->ip_src;
+    tb.ipDst = ih->ip_dst;
+    tb.portSrc = sport;
+    tb.portDst = dport;
+    tb.data = pkt_data;
+    tb.dataLen = header->caplen;
 
-	int rlt = writeToUserBuff((userBuff *)param, &tb, header->caplen);
-	//free(header);
-	//free(pkt_data);
-	if(-1 == rlt)
-		fprintf(stderr, "writeToUserBuff fatal error occured.\n");
+    int rlt = WriteToUserBuff((UserBuff *)param, &tb, header->caplen);
+    if(-1 == rlt)
+        fprintf(stderr, "writeToUserBuff fatal error occured.\n");
 }

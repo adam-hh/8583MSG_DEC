@@ -7,29 +7,29 @@
 #include <pthread.h>
 #include <QtCore/QList>
 
-QVector<tcpDataBlock*> DEC::vec; //raw data source
+QVector<TcpDataBlock*> DEC::vec; //raw data source
 QMutex DEC::mutex; //mutex
-pthread_t pthLoop, pthRead; //threads
-void *threadLoop(void* arg)
+pthread_t PthLoop, PthRead; //threads
+void *ThreadLoop(void* arg)
 {
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
-    loop(0, callbackWriteToBuff);
+    Loop(0, CallbackWriteToBuff);
     pthread_testcancel();
     return NULL;
 }
-void *threadReadData(void *arg)
+void *ThreadReadData(void *arg)
 {
     DEC::MainWindow *um = static_cast<DEC::MainWindow*>(arg);
-    foreach(tcpDataBlock* it, DEC::vec){
+    foreach(TcpDataBlock* it, DEC::vec){
         free(it->data);
         free(it);
     }
-    //QVector<tcpDataBlock*>().swap(vec); //empty vec
+    //QVector<TcpDataBlock*>().swap(vec); //empty vec
     DEC::vec.resize(0);
     um->model->resetModel(); //empty model
     while(true){
-        tcpDataBlock *b = (tcpDataBlock*)malloc(sizeof(tcpDataBlock));
-        if(1 == readFromUserBuff(usbf, b)){
+        TcpDataBlock *b = (TcpDataBlock*)malloc(sizeof(TcpDataBlock));
+        if(1 == ReadFromUserBuff(Usbf, b)){
             DEC::vec.append(b); //store to raw data source
             um->model->appendItem(b);//append to model(then show on GUI)
         }else{
@@ -99,20 +99,20 @@ void DEC::MainWindow::setPbt(bool bl)
 }
 int DEC::MainWindow::loop()
 {
-    usbf = initUserBuff(100000);
+    Usbf = InitUserBuff(100000);
     if(!(ui->lineEdit->hasAcceptableInput())){
         QMessageBox::information(this, "Title", "Reg mismatch.");
         return -1;
     }
-    if(1 != setFilter(ui->lineEdit->text().toLocal8Bit().data())){
+    if(1 != SetFilter(ui->lineEdit->text().toLocal8Bit().data())){
         QMessageBox::information(this, "Title", "Set filter failed.");
         return -1;
     }
-    if (pthread_create(&pthLoop, NULL, threadLoop, static_cast<void *>(this))) {
+    if (pthread_create(&PthLoop, NULL, ThreadLoop, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
     }
-    if (pthread_create(&pthRead, NULL, threadReadData, static_cast<void *>(this))) {
+    if (pthread_create(&PthRead, NULL, ThreadReadData, static_cast<void *>(this))) {
         QMessageBox::information(this, "Title", "Start pthLoop failed.");
         return -1;
     }
@@ -138,17 +138,17 @@ int DEC::MainWindow::decode()
 int DEC::MainWindow::stop()
 {
     pcap_breakloop(PHandle.handle);
-    pthread_cancel(pthLoop);
-    pthread_cancel(pthRead);
-    if(pthread_join(pthLoop, NULL)){
+    pthread_cancel(PthLoop);
+    pthread_cancel(PthRead);
+    if(pthread_join(PthLoop, NULL)){
         QMessageBox::information(this, "Title", "Error joining thread pthLoop.");
         return -1;
     }
-    if(pthread_join(pthRead, NULL)){
+    if(pthread_join(PthRead, NULL)){
         QMessageBox::information(this, "Title", "Error joining thread pthRead.");
         return -1;
     }
-    releaseUserBuff(usbf);
+    ReleaseUserBuff(Usbf);
     ui->pushButton_2->setEnabled(false);
     ui->pushButton_3->setEnabled(false);
     ui->pushButton->setEnabled(true);
@@ -175,20 +175,20 @@ void DEC::MainWindow::fillTable(void* ptr){
     switch(model->customerid){
         case CUSTOMER_JL:{
             MsgJL* msg = static_cast<MsgJL*>(ptr);
-            QByteArray tmp = QByteArray::fromRawData((char*)msg->MsgLen, sizeof(msg->MsgLen)).toHex();
-            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
+            QByteArray tmp = QByteArray::fromRawData((char*)msg->msgLen, sizeof(msg->msgLen)).toHex();
+            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("msgLen"));
             ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->MsgTPDU, sizeof(msg->MsgTPDU)).toHex();
-            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgTPDU"));
+            tmp = QByteArray::fromRawData((char*)msg->msgTPDU, sizeof(msg->msgTPDU)).toHex();
+            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("msgTPDU"));
             ui->tableWidget->setItem(1, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-			tmp = QByteArray::fromRawData((char*)msg->MsgHead, sizeof(msg->MsgHead)).toHex();
-            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgHead"));
+			tmp = QByteArray::fromRawData((char*)msg->msgHead, sizeof(msg->msgHead)).toHex();
+            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("msgHead"));
             ui->tableWidget->setItem(2, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->Field0, sizeof(msg->Field0)).toHex();
-            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("Field0"));
+            tmp = QByteArray::fromRawData((char*)msg->field0, sizeof(msg->field0)).toHex();
+            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("field0"));
             ui->tableWidget->setItem(3, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
             #define F(x,y) \
@@ -198,34 +198,34 @@ void DEC::MainWindow::fillTable(void* ptr){
                 ui->tableWidget->setItem(y, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));\
             }else{\
                 ui->tableWidget->setItem(y, 0, new QTableWidgetItem(#x));\
-                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("Empty"));\
+                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("empty"));\
             }
-            F(Field1, 4) F(Field2, 5) F(Field3, 6) F(Field4, 7) F(Field5, 8) F(Field6, 9) F(Field7, 10) F(Field8, 11) F(Field9, 12) F(Field10, 13)
-            F(Field11, 14) F(Field12, 15) F(Field13, 16) F(Field14, 17) F(Field15, 18) F(Field16, 19) F(Field17, 20) F(Field18, 21) F(Field19, 22) F(Field20, 23)
-            F(Field21, 24) F(Field22, 25) F(Field23, 26) F(Field24, 27) F(Field25, 28) F(Field26, 29) F(Field27, 30) F(Field28, 31) F(Field29, 32) F(Field30, 33)
-            F(Field31, 34) F(Field32, 35) F(Field33, 36) F(Field34, 37) F(Field35, 38) F(Field36, 39) F(Field37, 40) F(Field38, 41) F(Field39, 42) F(Field40, 43)
-            F(Field41, 44) F(Field42, 45) F(Field43, 46) F(Field44, 47) F(Field45, 48) F(Field46, 49) F(Field47, 50) F(Field48, 51) F(Field49, 52) F(Field50, 53)
-            F(Field51, 54) F(Field52, 55) F(Field53, 56) F(Field54, 57) F(Field55, 58) F(Field56, 59) F(Field57, 60) F(Field58, 61) F(Field59, 62) F(Field60, 63)
-            F(Field61, 64) F(Field62, 65) F(Field62, 66) F(Field63, 67) F(Field64, 68)
+            F(field1, 4) F(field2, 5) F(field3, 6) F(field4, 7) F(field5, 8) F(field6, 9) F(field7, 10) F(field8, 11) F(field9, 12) F(field10, 13)
+            F(field11, 14) F(field12, 15) F(field13, 16) F(field14, 17) F(field15, 18) F(field16, 19) F(field17, 20) F(field18, 21) F(field19, 22) F(field20, 23)
+            F(field21, 24) F(field22, 25) F(field23, 26) F(field24, 27) F(field25, 28) F(field26, 29) F(field27, 30) F(field28, 31) F(field29, 32) F(field30, 33)
+            F(field31, 34) F(field32, 35) F(field33, 36) F(field34, 37) F(field35, 38) F(field36, 39) F(field37, 40) F(field38, 41) F(field39, 42) F(field40, 43)
+            F(field41, 44) F(field42, 45) F(field43, 46) F(field44, 47) F(field45, 48) F(field46, 49) F(field47, 50) F(field48, 51) F(field49, 52) F(field50, 53)
+            F(field51, 54) F(field52, 55) F(field53, 56) F(field54, 57) F(field55, 58) F(field56, 59) F(field57, 60) F(field58, 61) F(field59, 62) F(field60, 63)
+            F(field61, 64) F(field62, 65) F(field62, 66) F(field63, 67) F(field64, 68)
             #undef F
             break;
         }
         case CUSTOMER_YS:{
             MsgYS* msg = static_cast<MsgYS*>(ptr);
-            QByteArray tmp = QByteArray::fromRawData((char*)msg->MsgLen, sizeof(msg->MsgLen)).toHex();
-            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
+            QByteArray tmp = QByteArray::fromRawData((char*)msg->msgLen, sizeof(msg->msgLen)).toHex();
+            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("msgLen"));
             ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->MsgTPDU, sizeof(msg->MsgTPDU)).toHex();
-            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgTPDU"));
+            tmp = QByteArray::fromRawData((char*)msg->msgTPDU, sizeof(msg->msgTPDU)).toHex();
+            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("msgTPDU"));
             ui->tableWidget->setItem(1, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-			tmp = QByteArray::fromRawData((char*)msg->MsgHead, sizeof(msg->MsgHead)).toHex();
-            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgHead"));
+			tmp = QByteArray::fromRawData((char*)msg->msgHead, sizeof(msg->msgHead)).toHex();
+            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("msgHead"));
             ui->tableWidget->setItem(2, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->Field0, sizeof(msg->Field0)).toHex();
-            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("Field0"));
+            tmp = QByteArray::fromRawData((char*)msg->field0, sizeof(msg->field0)).toHex();
+            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("field0"));
             ui->tableWidget->setItem(3, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
             #define F(x,y) \
@@ -235,35 +235,35 @@ void DEC::MainWindow::fillTable(void* ptr){
                 ui->tableWidget->setItem(y, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));\
             }else{\
                 ui->tableWidget->setItem(y, 0, new QTableWidgetItem(#x));\
-                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("Empty"));\
+                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("empty"));\
             }
-            F(Field1, 4) F(Field2, 5) F(Field3, 6) F(Field4, 7) F(Field5, 8) F(Field6, 9) F(Field7, 10) F(Field8, 11) F(Field9, 12) F(Field10, 13)
-            F(Field11, 14) F(Field12, 15) F(Field13, 16) F(Field14, 17) F(Field15, 18) F(Field16, 19) F(Field17, 20) F(Field18, 21) F(Field19, 22) F(Field20, 23)
-            F(Field21, 24) F(Field22, 25) F(Field23, 26) F(Field24, 27) F(Field25, 28) F(Field26, 29) F(Field27, 30) F(Field28, 31) F(Field29, 32) F(Field30, 33)
-            F(Field31, 34) F(Field32, 35) F(Field33, 36) F(Field34, 37) F(Field35, 38) F(Field36, 39) F(Field37, 40) F(Field38, 41) F(Field39, 42) F(Field40, 43)
-            F(Field41, 44) F(Field42, 45) F(Field43, 46) F(Field44, 47) F(Field45, 48) F(Field46, 49) F(Field47, 50) F(Field48, 51) F(Field49, 52) F(Field50, 53)
-            F(Field51, 54) F(Field52, 55) F(Field53, 56) F(Field54, 57) F(Field55, 58) F(Field56, 59) F(Field57, 60) F(Field58, 61) F(Field59, 62) F(Field60, 63)
-            F(Field61, 64) F(Field62, 65) F(Field62, 66) F(Field63, 67) F(Field64, 68)
+            F(field1, 4) F(field2, 5) F(field3, 6) F(field4, 7) F(field5, 8) F(field6, 9) F(field7, 10) F(field8, 11) F(field9, 12) F(field10, 13)
+            F(field11, 14) F(field12, 15) F(field13, 16) F(field14, 17) F(field15, 18) F(field16, 19) F(field17, 20) F(field18, 21) F(field19, 22) F(field20, 23)
+            F(field21, 24) F(field22, 25) F(field23, 26) F(field24, 27) F(field25, 28) F(field26, 29) F(field27, 30) F(field28, 31) F(field29, 32) F(field30, 33)
+            F(field31, 34) F(field32, 35) F(field33, 36) F(field34, 37) F(field35, 38) F(field36, 39) F(field37, 40) F(field38, 41) F(field39, 42) F(field40, 43)
+            F(field41, 44) F(field42, 45) F(field43, 46) F(field44, 47) F(field45, 48) F(field46, 49) F(field47, 50) F(field48, 51) F(field49, 52) F(field50, 53)
+            F(field51, 54) F(field52, 55) F(field53, 56) F(field54, 57) F(field55, 58) F(field56, 59) F(field57, 60) F(field58, 61) F(field59, 62) F(field60, 63)
+            F(field61, 64) F(field62, 65) F(field62, 66) F(field63, 67) F(field64, 68)
             #undef F
             break;
         }
         case CUSTOMER_CUP:
         default:{
             MsgJL* msg = static_cast<MsgJL*>(ptr);
-            QByteArray tmp = QByteArray::fromRawData((char*)msg->MsgLen, sizeof(msg->MsgLen)).toHex();
-            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("MsgLen"));
+            QByteArray tmp = QByteArray::fromRawData((char*)msg->msgLen, sizeof(msg->msgLen)).toHex();
+            ui->tableWidget->setItem(0, 0, new QTableWidgetItem("msgLen"));
             ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->MsgTPDU, sizeof(msg->MsgTPDU)).toHex();
-            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("MsgTPDU"));
+            tmp = QByteArray::fromRawData((char*)msg->msgTPDU, sizeof(msg->msgTPDU)).toHex();
+            ui->tableWidget->setItem(1, 0, new QTableWidgetItem("msgTPDU"));
             ui->tableWidget->setItem(1, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-			tmp = QByteArray::fromRawData((char*)msg->MsgHead, sizeof(msg->MsgHead)).toHex();
-            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("MsgHead"));
+			tmp = QByteArray::fromRawData((char*)msg->msgHead, sizeof(msg->msgHead)).toHex();
+            ui->tableWidget->setItem(2, 0, new QTableWidgetItem("msgHead"));
             ui->tableWidget->setItem(2, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
-            tmp = QByteArray::fromRawData((char*)msg->Field0, sizeof(msg->Field0)).toHex();
-            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("Field0"));
+            tmp = QByteArray::fromRawData((char*)msg->field0, sizeof(msg->field0)).toHex();
+            ui->tableWidget->setItem(3, 0, new QTableWidgetItem("field0"));
             ui->tableWidget->setItem(3, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
 
             #define F(x,y) \
@@ -273,15 +273,15 @@ void DEC::MainWindow::fillTable(void* ptr){
                 ui->tableWidget->setItem(y, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));\
             }else{\
                 ui->tableWidget->setItem(y, 0, new QTableWidgetItem(#x));\
-                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("Empty"));\
+                ui->tableWidget->setItem(y, 1, new QTableWidgetItem("empty"));\
             }
-            F(Field1, 4) F(Field2, 5) F(Field3, 6) F(Field4, 7) F(Field5, 8) F(Field6, 9) F(Field7, 10) F(Field8, 11) F(Field9, 12) F(Field10, 13)
-            F(Field11, 14) F(Field12, 15) F(Field13, 16) F(Field14, 17) F(Field15, 18) F(Field16, 19) F(Field17, 20) F(Field18, 21) F(Field19, 22) F(Field20, 23)
-            F(Field21, 24) F(Field22, 25) F(Field23, 26) F(Field24, 27) F(Field25, 28) F(Field26, 29) F(Field27, 30) F(Field28, 31) F(Field29, 32) F(Field30, 33)
-            F(Field31, 34) F(Field32, 35) F(Field33, 36) F(Field34, 37) F(Field35, 38) F(Field36, 39) F(Field37, 40) F(Field38, 41) F(Field39, 42) F(Field40, 43)
-            F(Field41, 44) F(Field42, 45) F(Field43, 46) F(Field44, 47) F(Field45, 48) F(Field46, 49) F(Field47, 50) F(Field48, 51) F(Field49, 52) F(Field50, 53)
-            F(Field51, 54) F(Field52, 55) F(Field53, 56) F(Field54, 57) F(Field55, 58) F(Field56, 59) F(Field57, 60) F(Field58, 61) F(Field59, 62) F(Field60, 63)
-            F(Field61, 64) F(Field62, 65) F(Field62, 66) F(Field63, 67) F(Field64, 68)
+            F(field1, 4) F(field2, 5) F(field3, 6) F(field4, 7) F(field5, 8) F(field6, 9) F(field7, 10) F(field8, 11) F(field9, 12) F(field10, 13)
+            F(field11, 14) F(field12, 15) F(field13, 16) F(field14, 17) F(field15, 18) F(field16, 19) F(field17, 20) F(field18, 21) F(field19, 22) F(field20, 23)
+            F(field21, 24) F(field22, 25) F(field23, 26) F(field24, 27) F(field25, 28) F(field26, 29) F(field27, 30) F(field28, 31) F(field29, 32) F(field30, 33)
+            F(field31, 34) F(field32, 35) F(field33, 36) F(field34, 37) F(field35, 38) F(field36, 39) F(field37, 40) F(field38, 41) F(field39, 42) F(field40, 43)
+            F(field41, 44) F(field42, 45) F(field43, 46) F(field44, 47) F(field45, 48) F(field46, 49) F(field47, 50) F(field48, 51) F(field49, 52) F(field50, 53)
+            F(field51, 54) F(field52, 55) F(field53, 56) F(field54, 57) F(field55, 58) F(field56, 59) F(field57, 60) F(field58, 61) F(field59, 62) F(field60, 63)
+            F(field61, 64) F(field62, 65) F(field62, 66) F(field63, 67) F(field64, 68)
             #undef F
             break;
         }
@@ -294,15 +294,15 @@ int DEC::MainWindow::decodeMsg(const QModelIndex& index)
     ui->tableWidget->clearContents();
     if(currentItem != NULL){
         u32 msg8583Len = 0;
-        const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
+        const u8* msg8583 = ::TestTPDU(static_cast<CustomerID>(model->customerid), model->tpdu, currentItem->tcpData()->data, currentItem->tcpData()->dataLen, &msg8583Len);
         if(NULL != msg8583){
             if(OK == model->decoder(msg8583, msg8583Len, model->ptr2)){
                 fillTable(model->ptr2);
             }else{
                 ui->textBrowser_2->setPlainText("decoding(illegal fields) fail.");
             }
-            ui->textBrowser_2->setPlainText(QString::asprintf("%s", consolebuffer.buf));
-            clearConsoleBuf();
+            ui->textBrowser_2->setPlainText(QString::asprintf("%s", ConsoleBuffer.buf));
+            ClearConsoleBuf();
         }else{
             ui->textBrowser_2->setPlainText(QString::asprintf("decoding(TPDU %s test fail) fail.", model->tpdu));
             return -1;
@@ -337,17 +337,17 @@ int DEC::MainWindow::decodeMsgManual()
         return -1;
     }
     u32 msg8583Len = 0;
-    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
+    const u8* msg8583 = ::TestTPDU(static_cast<CustomerID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
-        initConsoleBuf();
+        InitConsoleBuf();
         if(OK == model->decoder(msg8583, msg8583Len, model->ptr2)){
             fillTable(model->ptr2);
         }
         else{
             ui->textBrowser_2->setPlainText("decoding(illegal fields) fail.");
         }
-        ui->textBrowser_2->append(QString::asprintf("%s", consolebuffer.buf));
-        clearConsoleBuf();
+        ui->textBrowser_2->append(QString::asprintf("%s", ConsoleBuffer.buf));
+        ClearConsoleBuf();
     }else{
         ui->textBrowser_2->append("decoding(TPDU test fail) fail.");
         return -1;
@@ -375,7 +375,7 @@ int DEC::MainWindow::testTPDU()//test TPDU
         return -1;
     }
     u32 msg8583Len = 0;
-    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
+    const u8* msg8583 = ::TestTPDU(static_cast<CustomerID>(model->customerid), tpdu, msg, len / 2, &msg8583Len);
     if(NULL != msg8583){
         QMessageBox::information(this, "Title", "test TPDU sucess.");
     }else{

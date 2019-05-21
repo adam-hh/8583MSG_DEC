@@ -1,32 +1,9 @@
 #include "8583dump.h"
-/*Function:printDevList
- *Description:print the device list to stdout
- *Input:no
- *Output:no
- *Return:1 on sucess, -1 on fail
- */
-extern int printDevList();
-
-/*Function:openDev
- *Description:open a device from the Dev list
- *Input:no
- *Output:no
- *Return:true or false
- */
-extern int openDev();
-
-/*Function:setFilter
- *Description:compile then set a filter on PHandle
- *Input: a c-string filter
- *Output:no
- *Return: 0 if sucess, -1 if failed
- */
-extern int setFilter(const s8*);
 
 void ifprint(pcap_if_t *d);
 char *iptos(u_long in);
 char* ip6tos(struct sockaddr *sockaddr, char *address, int addrlen);
-int printDevList()
+int PrintDevList()
 {
     pcap_if_t *alldevs;
     pcap_if_t *p;
@@ -53,97 +30,97 @@ int printDevList()
 /* Print all the available information on the given interface */
 void ifprint(pcap_if_t *d)
 {
-  pcap_addr_t *a;
-  char ip6str[128] = {0};
+    pcap_addr_t *a;
+    char ip6str[128] = {0};
 
-  /* Name */
-  printf("%s\n",d->name);
+    /* Name */
+    printf("%s\n",d->name);
 
-  /* Description */
-  if (d->description)
+    /* Description */
+    if (d->description)
     printf("\tDescription: %s\n",d->description);
 
-  /* check flags on Loopback Address, Up, Running */
-  printf("\tLoopback: %s\n",(d->flags & PCAP_IF_LOOPBACK)?"yes":"no");
-  printf("\tUp: %s\n", (d->flags & PCAP_IF_UP) ? "yes" : "no");
-  printf("\tRunning: %s\n", (d->flags & PCAP_IF_RUNNING) ? "yes" : "no");
+    /* check flags on Loopback Address, Up, Running */
+    printf("\tLoopback: %s\n",(d->flags & PCAP_IF_LOOPBACK)?"yes":"no");
+    printf("\tUp: %s\n", (d->flags & PCAP_IF_UP) ? "yes" : "no");
+    printf("\tRunning: %s\n", (d->flags & PCAP_IF_RUNNING) ? "yes" : "no");
 
-  /* IP addresses */
-  for(a=d->addresses;a;a=a->next) {
-    printf("\tAddress Family: #%d\n",a->addr->sa_family);
-  
-    switch(a->addr->sa_family)
-    {
-      case AF_INET:
+    /* IP addresses */
+    for(a=d->addresses;a;a=a->next) {
+        printf("\tAddress Family: #%d\n",a->addr->sa_family);
+
+        switch(a->addr->sa_family)
+        {
+        case AF_INET:
         printf("\tAddress Family Name: AF_INET\n");
         if (a->addr)
-          printf("\tAddress: %s\n",iptos(((struct sockaddr_in *)a->addr)->sin_addr.s_addr));
+            printf("\tAddress: %s\n",iptos(((struct sockaddr_in *)a->addr)->sin_addr.s_addr));
         if (a->netmask)
-          printf("\tNetmask: %s\n",iptos(((struct sockaddr_in *)a->netmask)->sin_addr.s_addr));
+            printf("\tNetmask: %s\n",iptos(((struct sockaddr_in *)a->netmask)->sin_addr.s_addr));
         if (a->broadaddr)
-          printf("\tBroadcast Address: %s\n",iptos(((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr));
+            printf("\tBroadcast Address: %s\n",iptos(((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr));
         if (a->dstaddr)
-          printf("\tDestination Address: %s\n",iptos(((struct sockaddr_in *)a->dstaddr)->sin_addr.s_addr));
+            printf("\tDestination Address: %s\n",iptos(((struct sockaddr_in *)a->dstaddr)->sin_addr.s_addr));
         break;
 
-	  case AF_INET6:
-       printf("\tAddress Family Name: AF_INET6\n");
+        case AF_INET6:
+        printf("\tAddress Family Name: AF_INET6\n");
 #ifndef __MINGW32__ /* Cygnus doesn't have IPv6 */
         if (a->addr)
-          printf("\tAddress: %s\n", ip6tos(a->addr, ip6str, sizeof(ip6str)));
+            printf("\tAddress: %s\n", ip6tos(a->addr, ip6str, sizeof(ip6str)));
 #endif
-		break;
+        break;
 
-	  default:
+        default:
         printf("\tAddress Family Name: Unknown\n");
         break;
+        }
     }
-  }
-  printf("\n");
+    printf("\n");
 }
 
 /* From tcptraceroute, convert a numeric IP address to a string */
-#define IPTOSBUFFERS	12
+#define IPTOSBUFFERS    12
 char *iptos(u_long in)
 {
-	static char output[IPTOSBUFFERS][3*4+3+1]; //nice static, so that stack object can be reference outof this function.
-	static short which;
-	u_char *p;
+    static char output[IPTOSBUFFERS][3*4+3+1]; //nice static, so that stack object can be reference outof this function.
+    static short which;
+    u_char *p;
 
-	p = (u_char *)&in;
-	which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1);
-	sprintf(output[which], "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
-	return output[which];
+    p = (u_char *)&in;
+    which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1);
+    sprintf(output[which], "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+    return output[which];
 }
 
 #ifndef __MINGW32__ /* Cygnus doesn't have IPv6 */
 char* ip6tos(struct sockaddr *sockaddr, char *address, int addrlen)
 {
-	socklen_t sockaddrlen;
+    socklen_t sockaddrlen;
 
-	#ifdef WIN32
-	sockaddrlen = sizeof(struct sockaddr_in6);
-	#else
-	sockaddrlen = sizeof(struct sockaddr_storage);
-	#endif
+    #ifdef WIN32
+    sockaddrlen = sizeof(struct sockaddr_in6);
+    #else
+    sockaddrlen = sizeof(struct sockaddr_storage);
+    #endif
 
 
-	if(getnameinfo(sockaddr, 
-		sockaddrlen, 
-		address, 
-		addrlen, 
-		NULL, 
-		0, 
-		NI_NUMERICHOST) != 0) address = NULL;
+    if(getnameinfo(sockaddr, 
+        sockaddrlen, 
+        address, 
+        addrlen, 
+        NULL, 
+        0, 
+        NI_NUMERICHOST) != 0) address = NULL;
 
-	return address;
+    return address;
 }
 #endif /* __MINGW32__ */
 
-int openDev()
+int OpenDev()
 {
     char errbuf[PCAP_ERRBUF_SIZE + 1];
-    if(!printDevList())
+    if(!PrintDevList())
     {
         printf("No device found on you system.\n");
         return -1;
@@ -157,23 +134,23 @@ int openDev()
     gets(iname);
 
     /* Open the adapter */
-	if ((PHandle.handle = pcap_open_live(iname,	// name of the device
-		65536,							// portion of the packet to capture. 
-										// 65536 grants that the whole packet will be captured on all the MACs.
-		1,								// promiscuous mode (nonzero means promiscuous)
-		1000,							// read timeout
-		errbuf							// error buffer
-		)) == NULL)
-	{
-		fprintf(stderr,"\nError opening adapter\n");
-      PHandle.avaliable = -1;
-		return -1;
-	}
-  PHandle.avaliable = 1;
-  return 1;
+    if ((PHandle.handle = pcap_open_live(iname,// name of the device
+        65536,                          // portion of the packet to capture.
+                                        // 65536 grants that the whole packet will be captured on all the MACs.
+        1,                              // promiscuous mode (nonzero means promiscuous)
+        1000,                           // read timeout
+        errbuf                          // error buffer
+        )) == NULL)
+    {
+        fprintf(stderr,"\nError opening adapter\n");
+        PHandle.avaliable = -1;
+        return -1;
+    }
+    PHandle.avaliable = 1;
+    return 1;
 }
 
-int setFilter(const s8* filter)
+int SetFilter(const s8* filter)
 {
     struct bpf_program fcode;
     u32 netMask = 0xFFFFFF;

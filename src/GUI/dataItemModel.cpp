@@ -96,15 +96,14 @@ void DEC::dataItemModel::resetModel(){
     newRows.resize(0);
     endResetModel();
 }
-int DEC::dataItemModel::appendItem(tcpDataBlock* item){
+int DEC::dataItemModel::appendItem(TcpDataBlock* item){
     DEC::dataItem *record = new DEC::dataItem(item);
     int pos = -1;
     mutex.lock();
     u32 msg8583Len = 0;
-    const u8* msg8583 = ::testTPDU(static_cast<CUSTOMERID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
+    const u8* msg8583 = ::TestTPDU(static_cast<CustomerID>(customerid), tpdu, item->data, item->dataLen, &msg8583Len);
     if(NULL != msg8583){
-        //MsgJL msgjl = {0};
-        initConsoleBuf();
+        InitConsoleBuf();
         if(OK == decoder(msg8583, msg8583Len, ptr1)){
             record->setColor(GREEN);
         }else{
