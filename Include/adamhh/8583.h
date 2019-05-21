@@ -182,7 +182,6 @@ static inline const u8* TestTPDU(CustomerID cid, const s8 *tpdu, const u8 *src, 
             u32 rightVCheck = 0;
             ToLittleEndian(p-2, 2, &tmplen);
             switch(cid){
-                case CUSTOMER_CUP:
                 case CUSTOMER_JL:
                     *dstLen = 2 + tmplen;
                     rightVCheck = p + tmplen -src;
@@ -191,7 +190,10 @@ static inline const u8* TestTPDU(CustomerID cid, const s8 *tpdu, const u8 *src, 
                     *dstLen = tmplen;
                     rightVCheck = p + tmplen -src - 2;
                     break;
-                default: return NULL;
+                default: 
+                    *dstLen = 2 + tmplen;
+                    rightVCheck = p + tmplen -src;
+                    break;
             }
             if(rightVCheck > len) //check right side violation
                 return NULL;
