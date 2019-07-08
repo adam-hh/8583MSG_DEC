@@ -242,7 +242,7 @@
              <enum>Qt::SolidLine</enum>
             </property>
             <property name="rowCount">
-             <number>68</number>
+             <number>69</number>
             </property>
             <property name="columnCount">
              <number>2</number>
@@ -262,6 +262,7 @@
             <attribute name="verticalHeaderVisible">
              <bool>true</bool>
             </attribute>
+            <row/>
             <row/>
             <row/>
             <row/>

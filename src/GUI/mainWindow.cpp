@@ -459,8 +459,13 @@ void DEC::MainWindow::selectDecoder(int index){
             model->ptr2 = (void*)malloc(sizeof(MsgJL));
             break;
         case 1: //CUP
-            strcpy(model->tpdu, "6000010001");
+            strcpy(model->tpdu, "6000020000");
             model->customerid = CUSTOMER_CUP;
+            model->decoder = DecodeYLMsg;
+            free(model->ptr1);
+            free(model->ptr2);
+            model->ptr1 = (void*)malloc(sizeof(MsgYL));
+            model->ptr2 = (void*)malloc(sizeof(MsgYL));
             break;
         case 2: //YS
             strcpy(model->tpdu, "6000580000");
