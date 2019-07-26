@@ -249,7 +249,7 @@ void DEC::MainWindow::fillTable(void* ptr){
         }
         case CUSTOMER_CUP:
         default:{
-            MsgJL* msg = static_cast<MsgJL*>(ptr);
+            MsgYL* msg = static_cast<MsgYL*>(ptr);
             QByteArray tmp = QByteArray::fromRawData((char*)msg->msgLen, sizeof(msg->msgLen)).toHex();
             ui->tableWidget->setItem(0, 0, new QTableWidgetItem("msgLen"));
             ui->tableWidget->setItem(0, 1, new QTableWidgetItem(QString::fromUtf8(tmp).toUpper()));
